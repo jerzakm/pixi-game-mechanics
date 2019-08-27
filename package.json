@@ -1,0 +1,56 @@
+{
+  "name": "pixi-game-mechanics",
+  "version": "1.0.0",
+  "description": "Collection of game mechanics for pixi",
+  "main": "webpack.config.js",
+  "scripts": {
+    "webpack": "webpack --config webpack.config.js --mode development",
+    "browsersync": "browser-sync start --server --watch",
+    "bs": "browser-sync dist -w",
+    "start": "concurrently \"npm:webpack\" \"npm:bs\""
+  },
+  "dependencies": {
+    "color": "^3.1.2",
+    "matter-js": "^0.14.2",
+    "pixi.js": "^5.0.0-rc.2",
+    "stats.js": "^0.17.0"
+  },
+  "devDependencies": {
+    "@types/color": "^3.0.0",
+    "@types/stats.js": "^0.17.0",
+    "@types/node": "^12.0.2",
+    "@types/node-sass": "^4.11.0",
+    "@types/pixi.js": "^4.8.7",
+    "@types/webpack-env": "^1.13.9",
+    "autoprefixer": "^9.5.0",
+    "browser-sync": "^2.26.3",
+    "concurrently": "^4.1.0",
+    "css-loader": "^2.1.1",
+    "extract-text-webpack-plugin": "^3.0.2",
+    "html-loader": "^0.5.5",
+    "html-webpack-link-type-plugin": "^1.0.3",
+    "html-webpack-plugin": "^3.2.0",
+    "mini-css-extract-plugin": "^0.5.0",
+    "node-sass": "^4.12.0",
+    "postcss-loader": "^3.0.0",
+    "sass-loader": "^7.1.0",
+    "style-loader": "^0.23.1",
+    "ts-loader": "^6.0.1",
+    "typescript": "^3.4.5",
+    "uuid": "^3.3.2",
+    "webpack": "^4.29.6",
+    "webpack-cli": "^3.3.0",
+    "webpack-dev-server": "^3.2.1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jerzakm/pixi-game-mechanics.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/jerzakm/pixi-game-mechanics/issues"
+  },
+  "homepage": "https://github.com/jerzakm/pixi-game-mechanics#readme"
+}
