@@ -1,12 +1,12 @@
-import { Container, Graphics, interaction, Text } from "pixi.js";
+import { Container, Graphics, interaction, Text, filters } from "pixi.js";
 import { Point, calcAngleBetweenPoints, findPointWithAngle } from "../math/coordMath";
 
 const walls: Square[] = []
 const graphics = new Graphics()
 const fovGraphics = new Graphics()
-const gridWidth = 256
-const gridHeight = 128
 const gridCellSize = 8
+const gridWidth = Math.floor((window.innerWidth - 100) / gridCellSize)
+const gridHeight = Math.floor((window.innerHeight - 100) / gridCellSize)
 const mouseLoc = { x: 0, y: 0 }
 const statsText = new Text(`text`, { fill: '#ffffff', wordWrap: true, wordWrapWidth: 300 })
 
@@ -15,10 +15,15 @@ let updateNeeded = true
 
 const chunks: Square[][][] = []
 const chunkSize = gridCellSize * 10
+const chunkRenderRadius = 3
+const shadowCastingDistance = Math.SQRT2 * (chunkRenderRadius + 1) * chunkSize
 
 export const initShadowcasting = (stage: Container) => {
     stage.addChild(graphics)
     stage.addChild(fovGraphics)
+    fovGraphics.filters = [
+        new filters.AlphaFilter(0.7)
+    ]
     stage.addChild(statsText)
     statsText.position.x = 100
     graphics.interactive = true
@@ -96,9 +101,9 @@ const renderFov = (squaresToRender: Square[] = walls) => {
 
             const angle1 = calcAngleBetweenPoints(s1, mouseLoc)
             const angle2 = calcAngleBetweenPoints(s2, mouseLoc)
-
-            const p1 = findPointWithAngle(s1, angle1 - 180, 500)
-            const p2 = findPointWithAngle(s2, angle2 - 180, 500)
+            //
+            const p1 = findPointWithAngle(s1, angle1 - 180, shadowCastingDistance)
+            const p2 = findPointWithAngle(s2, angle2 - 180, shadowCastingDistance)
 
             calcCounter++
 
@@ -137,13 +142,19 @@ const animateShadowCasting = () => {
     //draw chunks
     const squaresToRender: Square[] = []
 
+    //chunk render range
+    const chunkX = Math.floor(mouseLoc.x / chunkSize)
+    const chunkY = Math.floor(mouseLoc.y / chunkSize)
+    const cminX = chunkX - chunkRenderRadius >= 0 ? chunkX - chunkRenderRadius : 0
+    const cmaxX = chunkX + chunkRenderRadius < chunks.length ? chunkX + chunkRenderRadius : chunks.length
+    const cminY = chunkY - chunkRenderRadius >= 0 ? chunkY - chunkRenderRadius : 0
+    const cmaxY = chunkY + chunkRenderRadius < chunks[0].length ? chunkY + chunkRenderRadius : chunks[0].length
+
     for (let x = 0; x < chunks.length; x++) {
         for (let y = 0; y < chunks[x].length; y++) {
-            const minX = x * chunkSize
-            const maxX = minX + chunkSize
-            const minY = y * chunkSize
-            const maxY = minY + chunkSize
-            if (mouseLoc.x >= minX && mouseLoc.x < maxX && mouseLoc.y >= minY && mouseLoc.y < maxY) {
+            const chunkX = x * chunkSize
+            const chunkY = y * chunkSize
+            if (x >= cminX && x <= cmaxX && y >= cminY && y <= cmaxY) {
                 squaresToRender.push(...chunks[x][y])
                 graphics.lineStyle(2, 0x77FF77)
                 graphics.beginFill(0x33FF33, 0.3)
@@ -151,7 +162,7 @@ const animateShadowCasting = () => {
                 graphics.lineStyle(2, 0xFF3333)
                 graphics.beginFill(0xFF3333, 0.3)
             }
-            graphics.drawRect(minX, minY, chunkSize - 2, chunkSize - 2)
+            graphics.drawRect(chunkX, chunkY, chunkSize - 2, chunkSize - 2)
             graphics.endFill()
         }
     }
@@ -160,6 +171,12 @@ const animateShadowCasting = () => {
         fovGraphics.clear()
         renderFov(squaresToRender)
         updateNeeded = false
+        fovGraphics.beginFill(0x000000)
+        fovGraphics.drawRect(0, 0, cminX * chunkSize, chunks[0].length * chunkSize)
+        fovGraphics.drawRect(cminX * chunkSize, 0, (cmaxX - cminX + 1) * chunkSize, cminY * chunkSize)
+        fovGraphics.drawRect(cminX * chunkSize, (cmaxY + 1) * chunkSize, (cmaxX - cminX + 1) * chunkSize, (chunks[0].length - cmaxY) * chunkSize)
+        fovGraphics.drawRect((cmaxX + 1) * chunkSize, 0, (chunks.length - cmaxX) * chunkSize, chunks[0].length * chunkSize)
+        fovGraphics.endFill()
     }
 
     statsText.text = `calculations: ${calcCounter}`
