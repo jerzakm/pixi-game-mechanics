@@ -12,10 +12,10 @@ document.body.appendChild(stats.dom)
 const shadowcasting = initShadowcasting(renderer.stage)
 
 
-renderer.ticker.add((delta) => {
+renderer.ticker.add((delta: number) => {
     stats.begin()
 
     shadowcasting()
-    
+
     stats.end()
 })
