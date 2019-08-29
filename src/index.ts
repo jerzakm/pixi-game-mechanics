@@ -18,7 +18,7 @@ renderer.ticker.add((delta: number) => {
     stats.begin()
 
     // shadowcasting()
-    physicsDemo()
+    physicsDemo(delta)
 
     stats.end()
 })
