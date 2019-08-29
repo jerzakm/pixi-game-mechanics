@@ -13,7 +13,7 @@ export function initRenderer() {
       height: window.innerHeight,
       backgroundColor: 0xAAAAAA,
       forceFXAA: false,
-      antialias: true,
+      antialias: false,
       powerPreference: 'high-performance',
       clearBeforeRender: true,
       preserveDrawingBuffer: false
