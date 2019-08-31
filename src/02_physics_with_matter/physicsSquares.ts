@@ -105,8 +105,6 @@ const makeBorders = () => {
     left.physicsBody.isStatic = true
     World.addBody(world, left.physicsBody)
     borders.push(left)
-
-
 }
 
 
