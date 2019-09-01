@@ -6,6 +6,7 @@ import { initPhysicsDemo } from "./02_physics_with_matter/physicsSquares";
 import { initPhysicsBattleFormation as initBodyMovement } from "./02_physics_with_matter/bodyMovement";
 import { initShootingArrows } from "./02_physics_with_matter/shootingArrows";
 import { initPlatformerMovement } from "./02_physics_with_matter/platformerMovement";
+import { initShatterDemo } from "./02_physics_with_matter/shatter";
 
 // window.decomp = require('poly-decomp')
 
@@ -22,7 +23,8 @@ document.body.appendChild(stats.dom)
 // const physicsDemo = initPhysicsDemo(renderer.stage)
 // const bodyMovement = initBodyMovement(renderer.stage)
 // const shootingArrows = initShootingArrows(renderer.stage)
-const platformerMovement = initPlatformerMovement(renderer.stage)
+// const platformerMovement = initPlatformerMovement(renderer.stage)
+const shatterDemo = initShatterDemo(renderer.stage)
 
 
 renderer.ticker.add((delta: number) => {
@@ -32,7 +34,8 @@ renderer.ticker.add((delta: number) => {
     // physicsDemo(delta)
     // bodyMovement(delta)
     // shootingArrows(delta)
-    platformerMovement(delta)
+    // platformerMovement(delta)
+    shatterDemo(delta)
 
     stats.end()
 })
