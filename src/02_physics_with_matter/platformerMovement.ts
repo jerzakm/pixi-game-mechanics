@@ -1,5 +1,5 @@
 import { Graphics, Container, Loader, Text } from "pixi.js";
-import { Body, Engine, World, } from "matter-js";
+import { Body, Engine, World } from "matter-js";
 import { PhysicsBody } from "./PhysicsBody";
 import { Point } from "../math/coordMath";
 const Combokeys = require('combokeys')
@@ -12,7 +12,7 @@ const container = new Container()
 const label = new Text(`label`, { fill: '#ffffff', wordWrap: true, wordWrapWidth: 300, fontSize: 12 })
 
 const engine = Engine.create()
-const world = engine.world;
+const world = engine.world
 
 let testBody = new PhysicsBody({ x: 1300, y: window.innerHeight - 80, width: 64, height: 64 })
 
@@ -20,50 +20,94 @@ const bodies: PhysicsBody[] = []
 const borders: PhysicsBody[] = []
 const env: PhysicsBody[] = []
 
+let move = {
+  left: false,
+  right: false,
+  jump: false,
+  jumpTimer: 0
+}
+
 export const initPlatformerMovement = (parentContainer: Container) => {
-  loader
-    .add('knight', 'knight.png')
-    .load(() => {
-      parentContainer.addChild(container)
-      container.addChild(g)
-      container.addChild(label)
-      label.position.x = 300
-      label.position.y = 20
+  parentContainer.addChild(container)
+  container.addChild(g)
+  container.addChild(label)
+  label.position.x = 300
+  label.position.y = 20
 
-      World.add(world, testBody.physicsBody)
+  World.add(world, testBody.physicsBody)
 
-      makeBorders()
-      initEnvironment()
-      initControlls()
+  makeBorders()
+  initEnvironment()
+  initControlls()
 
-
-      engine.enableSleeping = true
-    })
+  engine.enableSleeping = true
   return update
 }
 
 const initControlls = () => {
-  let combokeys = new Combokeys(document.documentElement)
+  window.addEventListener('keydown', (e: KeyboardEvent) => {
+    e.preventDefault()
+    switch (e.code) {
+      case 'KeyD': {
+        move.right = true
+        break
+      }
+      case 'KeyA': {
+        move.left = true
+        break
+      }
+      case 'Space': {
+        move.jump = true
+        jump()
+      }
+    }
+  })
+
+  window.addEventListener('keyup', (e: KeyboardEvent) => {
+    e.preventDefault()
+    switch (e.code) {
+      case 'KeyD': {
+        move.right = false
+        break
+      }
+      case 'KeyA': {
+        move.left = false
+        break
+      }
+      case 'Space': {
+
+      }
+    }
+  })
+
+}
+
+const horizontalMovementTick = () => {
   const body = testBody.physicsBody
-
-  Body.setDensity(body, 0.5)
-
+  Body.setDensity(body, 0.6)
   const currentVelocity = body.velocity
+  const maxVelocity = 9
 
-  const maxVelocity = 10
-  combokeys.bind('d', () => {
-    body.velocity.x < 0 ? Body.setVelocity(body, { x: 0, y: body.velocity.y }) : null
-    Body.setVelocity(body, { x: body.velocity.x < maxVelocity ? body.velocity.x + 5 : maxVelocity, y: currentVelocity.y })
-  })
+  Body.set(body, 'restitution', 0)
 
-  combokeys.bind('a', () => {
+  if (!move.left && !move.right) {
+    Body.setVelocity(body, { x: currentVelocity.x * 0.9, y: currentVelocity.y })
+  }
+
+  if (move.left) {
     body.velocity.x > 0 ? Body.setVelocity(body, { x: 0, y: body.velocity.y }) : null
-    Body.setVelocity(body, { x: Math.abs(body.velocity.x) < maxVelocity ? body.velocity.x - 5 : -maxVelocity, y: currentVelocity.y })
-  })
+    Body.setVelocity(body, { x: Math.abs(body.velocity.x) < maxVelocity ? body.velocity.x - 1 : -maxVelocity, y: currentVelocity.y })
+  }
 
-  combokeys.bind('space', () => {
-    Body.setVelocity(body, { x: currentVelocity.x, y: - 15 })
-  })
+  if (move.right) {
+    body.velocity.x < 0 ? Body.setVelocity(body, { x: 0, y: body.velocity.y }) : null
+    Body.setVelocity(body, { x: body.velocity.x < maxVelocity ? body.velocity.x + 1 : maxVelocity, y: currentVelocity.y })
+  }
+}
+
+const jump = () => {
+  testBody.physicsBody.frictionAir = 0.03
+  Body.applyForce(testBody.physicsBody, testBody.physicsBody.position, { x: 0, y: -150 })
 }
 
 const initEnvironment = () => {
@@ -76,15 +120,17 @@ const initEnvironment = () => {
 
   for (let body of env) {
     body.physicsBody.isStatic = true
+    body.physicsBody.friction = 1
     World.add(world, body.physicsBody)
   }
 }
 
 const updateBodyInfo = (body: Body) => {
   label.text = `
-    mass      =    ${body.mass}
-    velocityX =    ${body.velocity.x.toFixed(4)}
-    velocityY =    ${body.velocity.y.toFixed(4)}
+    mass        =     ${body.mass}
+    velocityX   =     ${body.velocity.x.toFixed(4)}
+    velocityY   =     ${body.velocity.y.toFixed(4)}
+    airFriction =     ${body.frictionAir}
   `
 }
 
@@ -121,7 +167,10 @@ const update = (delta: number) => {
   g.clear()
   drawGround()
 
+  Body.setAngle(testBody.physicsBody, 0)
   Engine.update(engine)
+
+  horizontalMovementTick()
 
   g.lineStyle(1, 0x999999)
   for (const border of borders) {

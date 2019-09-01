@@ -21,8 +21,8 @@ document.body.appendChild(stats.dom)
 
 // const physicsDemo = initPhysicsDemo(renderer.stage)
 // const bodyMovement = initBodyMovement(renderer.stage)
-const shootingArrows = initShootingArrows(renderer.stage)
-// const platformerMovement = initPlatformerMovement(renderer.stage)
+// const shootingArrows = initShootingArrows(renderer.stage)
+const platformerMovement = initPlatformerMovement(renderer.stage)
 
 
 renderer.ticker.add((delta: number) => {
@@ -31,8 +31,8 @@ renderer.ticker.add((delta: number) => {
     // shadowcasting()
     // physicsDemo(delta)
     // bodyMovement(delta)
-    shootingArrows(delta)
-    // platformerMovement(delta)
+    // shootingArrows(delta)
+    platformerMovement(delta)
 
     stats.end()
 })
