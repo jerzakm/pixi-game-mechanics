@@ -33,7 +33,7 @@ export const initPhysicsBattleFormation = (parentContainer: Container) => {
 
   makeBorders()
 
-  spawnBodies(800, 32)
+  spawnBodies(800, 16)
   engine.constraintIterations = 2
   engine.positionIterations = 2
   engine.velocityIterations = 2

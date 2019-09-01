@@ -11,6 +11,7 @@ export class PhysicsBody {
 
     constructor(options: IPhysicsBodyOptions) {
         this.options = options
+
         this.physicsBody = Bodies.rectangle(this.options.x, this.options.y, this.options.width, this.options.height)
         this.physicsBody.restitution = 1
         this.offsetX = this.options.width / 2
@@ -21,9 +22,9 @@ export class PhysicsBody {
         const scale = this.options.width / sprite.width
         sprite.scale.x = scale * 1.3
         sprite.scale.y = scale * 1.3
-        sprite.anchor.x = 0.5
-        sprite.anchor.y = 0.5
         this.sprite = sprite
+        this.sprite.anchor.x = 0.5
+        this.sprite.anchor.y = 0.5
     }
 
     public draw(g: Graphics) {
@@ -35,7 +36,7 @@ export class PhysicsBody {
         if (this.sprite) {
             this.sprite.position.x = Math.floor(this.physicsBody.position.x)
             this.sprite.position.y = Math.floor(this.physicsBody.position.y)
-            this.sprite.zIndex = this.sprite.position.y
+            // this.sprite.zIndex = this.sprite.position.y
             g.drawCircle(this.sprite.position.x, this.sprite.position.y, 3)
             g.drawCircle(this.physicsBody.position.x, this.physicsBody.position.y, 3)
         }

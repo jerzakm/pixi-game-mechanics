@@ -9,69 +9,73 @@ let isDevelopment = false
 const ROOT = path.resolve(__dirname);
 
 module.exports = {
-    mode: "production",
-    entry: {
-        main: "./src/index.ts"
-    },
+  mode: "production",
+  entry: {
+    main: "./src/index.ts"
+  },
 
-    devtool: "eval-source-map",
-    devServer: {
-       contentBase: '.',
-       hot: true
-    },
+  devtool: "eval-source-map",
+  devServer: {
+    contentBase: '.',
+    hot: true
+  },
 
-    output: {
-        filename: "[name].bundle.js",
-        path: path.resolve(__dirname, "dist")
-    },
+  output: {
+    filename: "[name].bundle.js",
+    path: path.resolve(__dirname, "dist")
+  },
 
-    resolve: {
-      extensions: [".tsx", ".ts", ".js", ".scss", ".css"]
-    },
+  resolve: {
+    extensions: [".tsx", ".ts", ".js", ".scss", ".css"]
+  },
 
-    optimization: {
-      splitChunks: {
-        cacheGroups: {
-          commons: {
-            test: /[\\/]node_modules[\\/]/,
-            name: 'vendors',
-            chunks: 'all',
-          },
+  optimization: {
+    splitChunks: {
+      cacheGroups: {
+        commons: {
+          test: /[\\/]node_modules[\\/]/,
+          name: 'vendors',
+          chunks: 'all',
         },
       },
     },
+  },
 
-    watch: true,
-    watchOptions: {
-        aggregateTimeout: 300,
-        poll: 1000
-    },
+  watch: true,
+  watchOptions: {
+    aggregateTimeout: 300,
+    poll: 1000
+  },
 
-    module: {
-        rules: [
-          {
-            test: /\.scss$/,
-            use: ['style-loader', 'css-loader', 'sass-loader']
-          },
-          {
-            test: /\.tsx?$/,
-            loader: 'ts-loader',
-            exclude: /node_modules/,
-          },
-          {
-            test: /\.html$/,
-            use: [{ loader: "html-loader", options: { minimize: true } }]
-          }
-        ]
+  module: {
+    rules: [{
+        test: /\.scss$/,
+        use: ['style-loader', 'css-loader', 'sass-loader']
       },
+      {
+        test: /\.tsx?$/,
+        loader: 'ts-loader',
+        exclude: /node_modules/,
+      },
+      {
+        test: /\.html$/,
+        use: [{
+          loader: "html-loader",
+          options: {
+            minimize: true
+          }
+        }]
+      }
+    ]
+  },
 
-      plugins: [
-        new MiniCssExtractPlugin({
-          filename: 'style.[contenthash].css',
-        }),
-        new HtmlWebPackPlugin({
-          template: "src/index.html",
-          filename: "./index.html"
-        }),
-      ]
+  plugins: [
+    new MiniCssExtractPlugin({
+      filename: 'style.[contenthash].css',
+    }),
+    new HtmlWebPackPlugin({
+      template: "src/index.html",
+      filename: "./index.html"
+    })
+  ]
 }

@@ -14,6 +14,7 @@
     "matter-js": "^0.14.2",
     "pixi-filters": "^3.0.3",
     "pixi.js": "^5.0.0-rc.2",
+    "poly-decomp": "^0.3.0",
     "stats.js": "^0.17.0"
   },
   "devDependencies": {

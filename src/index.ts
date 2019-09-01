@@ -4,6 +4,11 @@ import * as Stats from 'stats.js'
 import { initShadowcasting } from "./01_fov/shadowcasting";
 import { initPhysicsDemo } from "./02_physics_with_matter/physicsSquares";
 import { initPhysicsBattleFormation as initBodyMovement } from "./02_physics_with_matter/bodyMovement";
+import { initShootingArrows } from "./02_physics_with_matter/shootingArrows";
+
+window.decomp = require('poly-decomp')
+
+console.log(window.decomp)
 
 renderer.initRenderer()
 
@@ -12,9 +17,10 @@ stats.showPanel(0)
 document.body.appendChild(stats.dom)
 
 // const shadowcasting = initShadowcasting(renderer.stage)
-// const physicsDemo = initPhysicsDemo(renderer.stage)
 
-const bodyMovement = initBodyMovement(renderer.stage)
+// const physicsDemo = initPhysicsDemo(renderer.stage)
+// const bodyMovement = initBodyMovement(renderer.stage)
+const shootingArrows = initShootingArrows(renderer.stage)
 
 
 renderer.ticker.add((delta: number) => {
@@ -22,7 +28,8 @@ renderer.ticker.add((delta: number) => {
 
     // shadowcasting()
     // physicsDemo(delta)
-    bodyMovement(delta)
+    // bodyMovement(delta)
+    shootingArrows(delta)
 
     stats.end()
 })
