@@ -1,5 +1,5 @@
 import { Graphics, Container, Loader, Text } from "pixi.js";
-import { Body, Engine, World } from "matter-js";
+import { Body, Engine, World, Pairs, } from "matter-js";
 import { PhysicsBody } from "./PhysicsBody";
 import { Point } from "../math/coordMath";
 const Combokeys = require('combokeys')
@@ -14,17 +14,18 @@ const label = new Text(`label`, { fill: '#ffffff', wordWrap: true, wordWrapWidth
 const engine = Engine.create()
 const world = engine.world
 
-let testBody = new PhysicsBody({ x: 1300, y: window.innerHeight - 80, width: 64, height: 64 })
+let player = new PhysicsBody({ x: 1300, y: window.innerHeight - 80, width: 64, height: 64 })
+player.physicsBody.label = 'player'
 
 const bodies: PhysicsBody[] = []
 const borders: PhysicsBody[] = []
 const env: PhysicsBody[] = []
 
+let canJump = true
+
 let move = {
   left: false,
-  right: false,
-  jump: false,
-  jumpTimer: 0
+  right: false
 }
 
 export const initPlatformerMovement = (parentContainer: Container) => {
@@ -34,7 +35,7 @@ export const initPlatformerMovement = (parentContainer: Container) => {
   label.position.x = 300
   label.position.y = 20
 
-  World.add(world, testBody.physicsBody)
+  World.add(world, player.physicsBody)
 
   makeBorders()
   initEnvironment()
@@ -57,8 +58,9 @@ const initControlls = () => {
         break
       }
       case 'Space': {
-        move.jump = true
-        jump()
+        if (canJump) {
+          jump()
+        }
       }
     }
   })
@@ -83,7 +85,7 @@ const initControlls = () => {
 }
 
 const horizontalMovementTick = () => {
-  const body = testBody.physicsBody
+  const body = player.physicsBody
   Body.setDensity(body, 0.6)
   const currentVelocity = body.velocity
   const maxVelocity = 9
@@ -106,8 +108,9 @@ const horizontalMovementTick = () => {
 }
 
 const jump = () => {
-  testBody.physicsBody.frictionAir = 0.03
-  Body.applyForce(testBody.physicsBody, testBody.physicsBody.position, { x: 0, y: -150 })
+  canJump = false
+  player.physicsBody.frictionAir = 0.03
+  Body.applyForce(player.physicsBody, player.physicsBody.position, { x: 0, y: -150 })
 }
 
 const initEnvironment = () => {
@@ -162,13 +165,24 @@ const makeBorders = () => {
   borders.push(left)
 }
 
+const wallCollisionChecker = (pairs: any) => {
+  for (let c of pairs.collisionActive) {
+
+    if (c.bodyA.label == 'player' || c.bodyB.label == 'player') {
+      canJump = true
+      break
+    }
+  }
+}
+
 
 const update = (delta: number) => {
   g.clear()
   drawGround()
 
-  Body.setAngle(testBody.physicsBody, 0)
+  Body.setAngle(player.physicsBody, 0)
   Engine.update(engine)
+  wallCollisionChecker(engine.pairs)
 
   horizontalMovementTick()
 
@@ -180,7 +194,7 @@ const update = (delta: number) => {
 
   //testbody
   g.lineStyle(2, 0xFFFFFF)
-  testBody.draw(g)
+  player.draw(g)
   g.lineStyle(0)
 
   g.lineStyle(2, 0xFFFF00)
@@ -192,5 +206,5 @@ const update = (delta: number) => {
     body.draw(g)
   }
   g.lineStyle(0)
-  updateBodyInfo(testBody.physicsBody)
+  updateBodyInfo(player.physicsBody)
 }
