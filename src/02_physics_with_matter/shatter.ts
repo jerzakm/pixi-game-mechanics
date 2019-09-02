@@ -29,10 +29,10 @@ const world = engine.world
 // world.gravity.y = 0
 
 const posX = 600
-const posY = 200
+const posY = 800
 
 const radialCuts = 9
-const hexCuts = 4
+const hexCuts = 3
 
 
 const borders: PhysicsBody[] = []
@@ -69,7 +69,6 @@ export const initShatterDemo = (parentContainer: Container) => {
 }
 
 const makeEmitter = (body: Body) => {
-  console.log(body.mass)
   const emitterOptions = {
     alpha: {
       start: 0.3,
@@ -242,7 +241,7 @@ const sliceSprite = () => {
           }
 
         } catch (e) {
-          console.log(e)
+
         }
       }
       preDecompSlices = newSlices
@@ -286,6 +285,7 @@ const sliceSprite = () => {
 
   for (let i = 0; i < shatteredSprites.length; i++) {
     const cc = Vertices.centre(slicedBodyParts[i].vertices)
+    Body.applyForce(slicedBodyParts[i], { x: cc.x, y: cc.y + 30 }, { x: 0, y: -0.005 })
 
     shatteredSprites[i].anchor.x = ((hullCenter.x - cc.x) / -(max.x - min.x)) + 0.5
     shatteredSprites[i].anchor.y = ((hullCenter.y - cc.y) / -(max.y - min.y)) + 0.5
@@ -296,8 +296,8 @@ const sliceSprite = () => {
     container.addChild(shatteredMasks[i])
     // container.addChild(shatteredLabels[i])
   }
-
   slicedBodyParts.map(body => World.add(world, body))
+
 }
 
 const createBorders = () => {
@@ -390,8 +390,10 @@ const update = (delta: number) => {
     shatteredSprites[i].position.y = slicedBodyParts[i].position.y
     shatteredSprites[i].rotation = slicedBodyParts[i].angle
 
-    emitters[i].update(delta * 0.04)
-    emitters[i].updateSpawnPos(slicedBodyParts[i].position.x, slicedBodyParts[i].position.y)
+    if (emitters[i]) {
+      emitters[i].update(delta * 0.04)
+      emitters[i].updateSpawnPos(slicedBodyParts[i].position.x, slicedBodyParts[i].position.y)
+    }
 
     shatteredMasks[i].clear()
     shatteredMasks[i].beginFill(0x000000)
