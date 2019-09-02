@@ -5,7 +5,10 @@ import { renderer } from "../core/renderer";
 import { Point, findPointWithAngle, Line } from "../math/coordMath";
 import * as hull from 'hull.js'
 import * as PolyK from 'polyk'
+import * as decomp from 'poly-decomp'
+
 import { calcHexPoints } from "../math/polyMath";
+
 
 const debugMode = true
 
@@ -180,6 +183,28 @@ const sliceSprite = () => {
       shatteredLabels.push(new Text(`label`, { fill: '#ffffff', wordWrap: false, wordWrapWidth: 300, fontSize: 12 }))
       World.add(world, body)
     }
+    
+    let decompedSlices = []
+    
+    for(let slice of currentSlices){      
+      let decompArray = []
+      for(let i = 0; i< slice.length-1; i++){
+        decompArray.push([slice[i],slice[i+1]])
+      }
+      let convexPolygons = decomp.quickDecomp(decompArray)      
+      for(const group of convexPolygons){
+        let mini = []
+        for(let i of group){
+          mini.push(i[0],i[1])
+        }
+        decompedSlices.push(mini)
+      }
+    }
+
+    console.log(decompedSlices.length)
+    console.log(currentSlices.length)
+
+    currentSlices = decompedSlices
 
     shatteredPolygons.push(...currentSlices)
   }
@@ -259,9 +284,7 @@ const update = (delta: number) => {
   if(debugMode){
     drawHull()
     drawCuttingLines()
-  }
-
-   
+  }  
 
   for (let i = 0; i < shatteredBodies.length; i++) {
     const poly: number[] = []    
