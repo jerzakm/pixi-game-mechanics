@@ -8,7 +8,7 @@ import { initShootingArrows } from "./02_physics_with_matter/shootingArrows";
 import { initPlatformerMovement } from "./02_physics_with_matter/platformerMovement";
 import { initShatterDemo } from "./02_physics_with_matter/shatter";
 
-// window.decomp = require('poly-decomp')
+window.decomp = require('poly-decomp')
 
 // console.log(window.decomp)
 
