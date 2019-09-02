@@ -1,5 +1,5 @@
 import { Graphics, Container, Loader, Text, Sprite } from "pixi.js";
-import { Body, Engine, World, Pairs, Vector, Vertices } from "matter-js";
+import { Body, Engine, World, Pairs, Vector, Vertices, Render, IRendererOptions } from "matter-js";
 import { PhysicsBody } from "./PhysicsBody";
 import { renderer } from "../core/renderer";
 import { Point, findPointWithAngle, Line } from "../math/coordMath";
@@ -14,8 +14,6 @@ const container = new Container()
 
 const engine = Engine.create()
 const world = engine.world
-// world.gravity.x = 0
-// world.gravity.y = 0.01
 
 const posX = 300
 const posY = 500
@@ -34,23 +32,40 @@ const shatteredSprites: Sprite[] = []
 const shatteredMasks: Graphics[] = []
 const shatteredLabels: Text[] = []
 
+let matterRender: Render | undefined
+
 
 let orcSprite: Sprite | undefined
 
 export const initShatterDemo = (parentContainer: Container) => {
+  makeBorders()
   loader
     .add('orc', 'orc.png')
     .load(() => {
       parentContainer.addChild(container)
       container.addChild(g)
-      makeBorders()
       initObj()
       interactiveGraphics()
       initCuttingLines()
-      implode()
+      sliceObj()
+      debugRenderer()
     })
 
   return update
+}
+
+const debugRenderer = () => {
+  const options: IRendererOptions = {
+    width: window.innerWidth,
+    height: window.innerHeight,
+  }
+
+  matterRender = Render.create({
+   element: document.body,
+   engine: engine,
+   options: options
+ })
+ matterRender.canvas.style.zIndex = '100'
 }
 
 const interactiveGraphics = () => {
@@ -98,7 +113,7 @@ const initObj = () => {
     r.push([point.x, point.y])
   }
 
-  hullPoints.push(...hull.default(r, 50))
+  hullPoints.push(...hull.default(r, 100))
   container.addChild(sprite)
 
   sprite.alpha = 0.5
@@ -113,8 +128,8 @@ const initCuttingLines = () => {
       y: orcSprite.y + orcSprite.height/2
     }
 
-    const radialCuts = 10
-    const hexCuts = 3
+    const radialCuts = 15
+    const hexCuts = 2
 
     for(let i = 0; i< radialCuts; i++){
       const angle = 0 + i * (360/radialCuts)
@@ -128,8 +143,6 @@ const initCuttingLines = () => {
       const r = (i+1)*45
       const h = r * Math.sqrt(3)
       const hexPoly = calcHexPoints(r,h, false)
-
-      console.log(hexPoly)
       
     
       for(let j = 0; j<6;j++){
@@ -143,13 +156,12 @@ const initCuttingLines = () => {
             y: hexPoly[(j+1)*2>=hexPoly.length? 1: (j+1)*2 +1]+ posY  + orcSprite.height/2
           }
         })
-        console.log(cuttingLines[cuttingLines.length-1])
       }
     }    
   }
 }
 
-const implode = () => {
+const sliceObj = () => {
   if (orcSprite) {
     const y = orcSprite.height / 2 + orcSprite.position.y
     const fromX = orcSprite.position.x - 100
@@ -159,10 +171,22 @@ const implode = () => {
       polygon.push(h[0], h[1])
     }
 
-    const sliced = PolyK.Slice(polygon, fromX, y, toX, y)
-    shatteredPolygons.push(...sliced)
+    let currentSlices = PolyK.Slice(polygon, 0, 0, 0, 0)
 
-    for (const slice of sliced) {
+    for(const line of cuttingLines){
+      let newSlices:number[][] = []
+      for(const slice of currentSlices){
+        try{
+          let fresh = PolyK.Slice(slice, line.from.x, line.from.y, line.to.x, line.to.y)
+          newSlices.push(...fresh)
+        }catch(e){
+          console.log(e)
+        }        
+      }
+      currentSlices = newSlices
+    }
+
+    for (const slice of currentSlices) {
       let path = ''
       slice.map(s => path += `${s}, `)
       let body = Body.create({})
@@ -170,11 +194,13 @@ const implode = () => {
       body.vertices = vert
       World.add(world, body)
       shatteredBodies.push(body)
-      Body.applyForce(body, body.position, { x: Math.random() / 200, y: Math.random() / 200 })
+      // Body.applyForce(body, body.position, { x: Math.random() / 200, y: Math.random() / 200 })
       shatteredSprites.push(Sprite.from(loader.resources['orc'].texture))
       shatteredMasks.push(new Graphics())
       shatteredLabels.push(new Text(`label`, { fill: '#ffffff', wordWrap: false, wordWrapWidth: 300, fontSize: 12 }))
     }
+
+    shatteredPolygons.push(...currentSlices)
   }
 
   for (let sprite of shatteredSprites) {
@@ -185,7 +211,7 @@ const implode = () => {
     container.addChild(mask)
   }
   for (let label of shatteredLabels) {
-    container.addChild(label)
+    // container.addChild(label)
   }
 }
 
@@ -214,8 +240,9 @@ const makeBorders = () => {
 
 
 const update = (delta: number) => {
+  Engine.update(engine)  
+  // matterRender? Render.run(matterRender) : null
   g.clear()
-  Engine.update(engine)
   // drawGround()
   g.beginFill(0x888888)
   for (const border of borders) {
@@ -250,7 +277,7 @@ const update = (delta: number) => {
     shatteredBodies[i].vertices.map(v => {
       poly.push(v.x, v.y)
       g.beginFill(0xFFFF00)
-      g.drawCircle(v.x, v.y,5)
+      // g.drawCircle(v.x, v.y,5)
       g.endFill()
     }
     )
