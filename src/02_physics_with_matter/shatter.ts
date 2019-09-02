@@ -1,5 +1,5 @@
 import { Graphics, Container, Loader, Text, Sprite } from "pixi.js";
-import { Body, Engine, World, Pairs, Vector, Vertices, Render, IRendererOptions } from "matter-js";
+import { Body,Bodies, Engine, World, Pairs, Vector, Vertices, Render, IRendererOptions } from "matter-js";
 import { PhysicsBody } from "./PhysicsBody";
 import { renderer } from "../core/renderer";
 import { Point, findPointWithAngle, Line } from "../math/coordMath";
@@ -7,16 +7,22 @@ import * as hull from 'hull.js'
 import * as PolyK from 'polyk'
 import { calcHexPoints } from "../math/polyMath";
 
+const debugMode = true
+
 const loader = Loader.shared;
 
 const g = new Graphics()
 const container = new Container()
 
 const engine = Engine.create()
+engine.constraintIterations = 5
+engine.positionIterations = 5
+engine.velocityIterations = 5
 const world = engine.world
 
-const posX = 300
-const posY = 500
+const posX = 600
+const posY = 200
+
 
 const borders: PhysicsBody[] = []
 
@@ -38,50 +44,22 @@ let matterRender: Render | undefined
 let orcSprite: Sprite | undefined
 
 export const initShatterDemo = (parentContainer: Container) => {
-  makeBorders()
+  createBorders()
   loader
     .add('orc', 'orc.png')
     .load(() => {
       parentContainer.addChild(container)
       container.addChild(g)
-      initObj()
-      interactiveGraphics()
-      initCuttingLines()
-      sliceObj()
-      debugRenderer()
+      makePolygonFromSprite()
+      createCuttingLines()
+      sliceSprite()      
     })
 
   return update
 }
 
-const debugRenderer = () => {
-  const options: IRendererOptions = {
-    width: window.innerWidth,
-    height: window.innerHeight,
-  }
-
-  matterRender = Render.create({
-   element: document.body,
-   engine: engine,
-   options: options
- })
- matterRender.canvas.style.zIndex = '100'
-}
-
-const interactiveGraphics = () => {
-  g.interactive = true
-  g.buttonMode = true
-}
-
-const drawGround = () => {
-  g.beginFill(0x121212)
-  g.drawRect(0, 0, window.innerWidth, window.innerHeight)
-  g.endFill()
-}
-
-const initObj = () => {
+const makePolygonFromSprite = () => {
   const sprite = Sprite.from(loader.resources['orc'].texture)
-
   const pixels = renderer.extract.pixels(sprite)
 
   const getColorIndicesForCoord = (x: number, y: number, width: number) => {
@@ -113,15 +91,15 @@ const initObj = () => {
     r.push([point.x, point.y])
   }
 
-  hullPoints.push(...hull.default(r, 100))
+  hullPoints.push(...hull.default(r, 30))
   container.addChild(sprite)
 
-  sprite.alpha = 0.5
+  debugMode? sprite.alpha = 0.5 : sprite.alpha = 0
 
   orcSprite = sprite
 }
 
-const initCuttingLines = () => {
+const createCuttingLines = () => {
   if(orcSprite){
     const c = {
       x: orcSprite.x + orcSprite.width/2,
@@ -133,8 +111,8 @@ const initCuttingLines = () => {
 
     for(let i = 0; i< radialCuts; i++){
       const angle = 0 + i * (360/radialCuts)
-      const p1 = findPointWithAngle(c, angle, Math.sqrt(orcSprite.width*orcSprite.height)+50)
-      const p2 = findPointWithAngle(c, angle-180, Math.sqrt(orcSprite.width*orcSprite.height)+50)
+      const p1 = findPointWithAngle(c, angle, Math.sqrt(orcSprite.width*orcSprite.height)/2+50)
+      const p2 = findPointWithAngle(c, angle-180, Math.sqrt(orcSprite.width*orcSprite.height)/2+50)
       cuttingLines.push({from: p1, to: p2})
     }
 
@@ -161,7 +139,7 @@ const initCuttingLines = () => {
   }
 }
 
-const sliceObj = () => {
+const sliceSprite = () => {
   if (orcSprite) {
     const y = orcSprite.height / 2 + orcSprite.position.y
     const fromX = orcSprite.position.x - 100
@@ -189,34 +167,41 @@ const sliceObj = () => {
     for (const slice of currentSlices) {
       let path = ''
       slice.map(s => path += `${s}, `)
+      const bodyOptions: Matter.IBodyDefinition = {
+
+      }
       let body = Body.create({})
       const vert = Vertices.fromPath(path, body)      
       body.vertices = vert
-      World.add(world, body)
-      shatteredBodies.push(body)
-      // Body.applyForce(body, body.position, { x: Math.random() / 200, y: Math.random() / 200 })
+
+      shatteredBodies.push(body)      
       shatteredSprites.push(Sprite.from(loader.resources['orc'].texture))
       shatteredMasks.push(new Graphics())
       shatteredLabels.push(new Text(`label`, { fill: '#ffffff', wordWrap: false, wordWrapWidth: 300, fontSize: 12 }))
+      World.add(world, body)
     }
 
     shatteredPolygons.push(...currentSlices)
   }
 
-  for (let sprite of shatteredSprites) {
-    sprite.alpha = 0.5
-    container.addChild(sprite)
-  }
-  for (let mask of shatteredMasks) {
-    container.addChild(mask)
-  }
-  for (let label of shatteredLabels) {
-    // container.addChild(label)
+  for(let i = 0; i< shatteredSprites.length; i++){    
+    shatteredSprites[i].anchor.x = 0
+    shatteredSprites[i].anchor.y = 0
+    shatteredSprites[i].alpha = 0.5
+    container.addChild(shatteredSprites[i])
+
+    shatteredSprites[i].mask = shatteredMasks[i]    
+    // container.addChild(shatteredMasks[i])    
+    // container.addChild(shatteredLabels[i])
   }
 }
 
-const makeBorders = () => {
+const createBorders = () => {
   const borderThickness = 100
+  // const b2 = new PhysicsBody({ x: window.innerWidth / 2, y: window.innerHeight-2*borderThickness, width: window.innerWidth-300, height: borderThickness*2 })  
+  // World.addBody(world, b2.physicsBody)
+  // borders.push(b2)
+
   const bottom = new PhysicsBody({ x: window.innerWidth / 2, y: window.innerHeight, width: window.innerWidth, height: borderThickness })
   bottom.physicsBody.isStatic = true
   World.addBody(world, bottom.physicsBody)
@@ -238,18 +223,7 @@ const makeBorders = () => {
   borders.push(left)
 }
 
-
-const update = (delta: number) => {
-  Engine.update(engine)  
-  // matterRender? Render.run(matterRender) : null
-  g.clear()
-  // drawGround()
-  g.beginFill(0x888888)
-  for (const border of borders) {
-    border.draw(g)
-  }
-  g.endFill()
-
+const drawHull = () => {
   g.lineStyle(2, 0xFF0000)
   if (hullPoints.length > 0) {
     g.moveTo(hullPoints[0][0], hullPoints[0][1])
@@ -258,28 +232,50 @@ const update = (delta: number) => {
     }
   }
   g.lineStyle(0)
+}
 
+const drawCuttingLines = () => {
   for(const l of cuttingLines){
     g.lineStyle(3, 0xFFFFFF)
     g.moveTo(l.from.x, l.from.y)
     g.lineTo(l.to.x, l.to.y)
     g.lineStyle(0)
   }
+}
 
+
+const update = (delta: number) => {
+  Engine.update(engine)  
+  g.clear()
   
+  //draw borders
+  g.beginFill(0x888888)
+  for (const border of borders) {
+    border.draw(g)
+  }
+  g.endFill()
+
+  //if debug draw helper graphics
+  if(debugMode){
+    drawHull()
+    drawCuttingLines()
+  }
+
+   
 
   for (let i = 0; i < shatteredBodies.length; i++) {
-    const poly: number[] = []
-
-    shatteredSprites[i].anchor.x = 0
-    shatteredSprites[i].anchor.y = 0
+    const poly: number[] = []    
 
     shatteredBodies[i].vertices.map(v => {
       poly.push(v.x, v.y)
-      g.beginFill(0xFFFF00)
-      // g.drawCircle(v.x, v.y,5)
-      g.endFill()
+      if(debugMode){ //draw circles on vertices
+        g.beginFill(0xFFFF00)
+        g.drawCircle(v.x, v.y,4)
+        g.endFill()
+      }      
     }
+
+
     )
     shatteredSprites[i].position.x = shatteredBodies[i].position.x + posX
     shatteredSprites[i].position.y = shatteredBodies[i].position.y + posY
@@ -297,8 +293,7 @@ const update = (delta: number) => {
     shatteredMasks[i].drawPolygon(poly)
     shatteredMasks[i].endFill()
 
-    shatteredSprites[i].mask = shatteredMasks[i]
-    g.lineStyle(2, 0xFF00FF)  
+    g.lineStyle(2, 0xFF00FF)      
     g.drawPolygon(poly)
     g.lineStyle(0)    
   }
