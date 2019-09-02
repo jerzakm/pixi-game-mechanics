@@ -2,9 +2,10 @@ import { Graphics, Container, Loader, Text, Sprite } from "pixi.js";
 import { Body, Engine, World, Pairs, Vector, Vertices } from "matter-js";
 import { PhysicsBody } from "./PhysicsBody";
 import { renderer } from "../core/renderer";
-import { Point, findPointWithAngle } from "../math/coordMath";
+import { Point, findPointWithAngle, Line } from "../math/coordMath";
 import * as hull from 'hull.js'
 import * as PolyK from 'polyk'
+import { calcHexPoints } from "../math/polyMath";
 
 const loader = Loader.shared;
 
@@ -13,11 +14,11 @@ const container = new Container()
 
 const engine = Engine.create()
 const world = engine.world
-world.gravity.x = 0
-world.gravity.y = 0.01
+// world.gravity.x = 0
+// world.gravity.y = 0.01
 
-const posX = 10
-const posY = 10
+const posX = 300
+const posY = 500
 
 const borders: PhysicsBody[] = []
 
@@ -27,9 +28,12 @@ const hullPoints: any[] = []
 const shatteredPolygons: number[][] = []
 const shatteredBodies: Body[] = []
 
+const cuttingLines: Line[] = []
+
 const shatteredSprites: Sprite[] = []
 const shatteredMasks: Graphics[] = []
 const shatteredLabels: Text[] = []
+
 
 let orcSprite: Sprite | undefined
 
@@ -42,6 +46,7 @@ export const initShatterDemo = (parentContainer: Container) => {
       makeBorders()
       initObj()
       interactiveGraphics()
+      initCuttingLines()
       implode()
     })
 
@@ -93,12 +98,55 @@ const initObj = () => {
     r.push([point.x, point.y])
   }
 
-  hullPoints.push(...hull.default(r, 80))
+  hullPoints.push(...hull.default(r, 50))
   container.addChild(sprite)
 
   sprite.alpha = 0.5
 
   orcSprite = sprite
+}
+
+const initCuttingLines = () => {
+  if(orcSprite){
+    const c = {
+      x: orcSprite.x + orcSprite.width/2,
+      y: orcSprite.y + orcSprite.height/2
+    }
+
+    const radialCuts = 10
+    const hexCuts = 3
+
+    for(let i = 0; i< radialCuts; i++){
+      const angle = 0 + i * (360/radialCuts)
+      const p1 = findPointWithAngle(c, angle, Math.sqrt(orcSprite.width*orcSprite.height)+50)
+      const p2 = findPointWithAngle(c, angle-180, Math.sqrt(orcSprite.width*orcSprite.height)+50)
+      cuttingLines.push({from: p1, to: p2})
+    }
+
+
+    for(let i = 0; i< hexCuts; i++){
+      const r = (i+1)*45
+      const h = r * Math.sqrt(3)
+      const hexPoly = calcHexPoints(r,h, false)
+
+      console.log(hexPoly)
+      
+    
+      for(let j = 0; j<6;j++){
+        cuttingLines.push({
+          from: {
+            x: hexPoly[j*2] + posX+ orcSprite.width/2,
+            y: hexPoly[j*2 +1]+ posY+ orcSprite.height/2
+          },
+          to: {
+            x: hexPoly[(j+1)*2>=hexPoly.length? 0:(j+1)*2] + posX + orcSprite.width/2,
+            y: hexPoly[(j+1)*2>=hexPoly.length? 1: (j+1)*2 +1]+ posY  + orcSprite.height/2
+          }
+        })
+        console.log(cuttingLines[cuttingLines.length-1])
+      }
+    }    
+  }
 }
 
 const implode = () => {
@@ -116,13 +164,13 @@ const implode = () => {
 
     for (const slice of sliced) {
       let path = ''
-      slice.map(s => path += `${s} `)
+      slice.map(s => path += `${s}, `)
       let body = Body.create({})
-      const vert = Vertices.fromPath(path, body)
+      const vert = Vertices.fromPath(path, body)      
       body.vertices = vert
       World.add(world, body)
       shatteredBodies.push(body)
-      Body.applyForce(body, body.position, { x: Math.random() / 100, y: Math.random() / 100 })
+      Body.applyForce(body, body.position, { x: Math.random() / 200, y: Math.random() / 200 })
       shatteredSprites.push(Sprite.from(loader.resources['orc'].texture))
       shatteredMasks.push(new Graphics())
       shatteredLabels.push(new Text(`label`, { fill: '#ffffff', wordWrap: false, wordWrapWidth: 300, fontSize: 12 }))
@@ -142,22 +190,23 @@ const implode = () => {
 }
 
 const makeBorders = () => {
-  const bottom = new PhysicsBody({ x: window.innerWidth / 2, y: window.innerHeight, width: window.innerWidth, height: 30 })
+  const borderThickness = 100
+  const bottom = new PhysicsBody({ x: window.innerWidth / 2, y: window.innerHeight, width: window.innerWidth, height: borderThickness })
   bottom.physicsBody.isStatic = true
   World.addBody(world, bottom.physicsBody)
   borders.push(bottom)
 
-  const top = new PhysicsBody({ x: window.innerWidth / 2, y: 0, width: window.innerWidth, height: 30 })
+  const top = new PhysicsBody({ x: window.innerWidth / 2, y: 0, width: window.innerWidth, height: borderThickness })
   top.physicsBody.isStatic = true
   World.addBody(world, top.physicsBody)
   borders.push(top)
 
-  const right = new PhysicsBody({ x: window.innerWidth, y: window.innerHeight / 2, width: 30, height: window.innerHeight })
+  const right = new PhysicsBody({ x: window.innerWidth, y: window.innerHeight / 2, width: borderThickness, height: window.innerHeight })
   right.physicsBody.isStatic = true
   World.addBody(world, right.physicsBody)
   borders.push(right)
 
-  const left = new PhysicsBody({ x: 0, y: window.innerHeight / 2, width: 30, height: window.innerHeight })
+  const left = new PhysicsBody({ x: 0, y: window.innerHeight / 2, width: borderThickness, height: window.innerHeight })
   left.physicsBody.isStatic = true
   World.addBody(world, left.physicsBody)
   borders.push(left)
@@ -167,7 +216,7 @@ const makeBorders = () => {
 const update = (delta: number) => {
   g.clear()
   Engine.update(engine)
-  drawGround()
+  // drawGround()
   g.beginFill(0x888888)
   for (const border of borders) {
     border.draw(g)
@@ -183,18 +232,14 @@ const update = (delta: number) => {
   }
   g.lineStyle(0)
 
-  // g.lineStyle(2, 0x00FF00)
-  // if (orcSprite) {
-  //   const fromY = orcSprite.height / 2 + orcSprite.position.y
-  //   const fromX1 = orcSprite.position.x - 100
-  //   const toX1 = orcSprite.position.x + orcSprite.width + 100
-  //   g.moveTo(fromX1, fromY)
-  //   g.lineTo(toX1, fromY)
-  // }
-  // g.lineStyle(0)
+  for(const l of cuttingLines){
+    g.lineStyle(3, 0xFFFFFF)
+    g.moveTo(l.from.x, l.from.y)
+    g.lineTo(l.to.x, l.to.y)
+    g.lineStyle(0)
+  }
 
-  g.lineStyle(2, 0xFF00FF)
-  g.beginFill(0xFFFFFF, 0.5)
+  
 
   for (let i = 0; i < shatteredBodies.length; i++) {
     const poly: number[] = []
@@ -202,7 +247,13 @@ const update = (delta: number) => {
     shatteredSprites[i].anchor.x = 0
     shatteredSprites[i].anchor.y = 0
 
-    shatteredBodies[i].vertices.map(v => poly.push(v.x, v.y))
+    shatteredBodies[i].vertices.map(v => {
+      poly.push(v.x, v.y)
+      g.beginFill(0xFFFF00)
+      g.drawCircle(v.x, v.y,5)
+      g.endFill()
+    }
+    )
     shatteredSprites[i].position.x = shatteredBodies[i].position.x + posX
     shatteredSprites[i].position.y = shatteredBodies[i].position.y + posY
     shatteredSprites[i].rotation = shatteredBodies[i].angle
@@ -220,10 +271,9 @@ const update = (delta: number) => {
     shatteredMasks[i].endFill()
 
     shatteredSprites[i].mask = shatteredMasks[i]
-
-    // g.drawPolygon(poly)
+    g.lineStyle(2, 0xFF00FF)  
+    g.drawPolygon(poly)
+    g.lineStyle(0)    
   }
-
-  g.endFill()
-  g.lineStyle(0)
+  
 }
