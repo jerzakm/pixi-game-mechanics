@@ -29,7 +29,7 @@ const world = engine.world
 // world.gravity.y = 0
 
 const posX = 600
-const posY = 800
+const posY = 500
 
 const radialCuts = 9
 const hexCuts = 3
@@ -71,12 +71,12 @@ export const initShatterDemo = (parentContainer: Container) => {
 const makeEmitter = (body: Body) => {
   const emitterOptions = {
     alpha: {
-      start: 0.3,
-      end: 0
+      start: 0.7,
+      end: 0.3
     },
     scale: {
-      start: 0.004 * body.mass,
-      end: 0.009 * body.mass,
+      start: 0.003 * body.mass/5,
+      end: 0.007 * body.mass/5,
       minimumScaleMultiplier: 60
     },
     color: {
@@ -84,13 +84,13 @@ const makeEmitter = (body: Body) => {
       end: '#e30707'
     },
     speed: {
-      start: 10,
-      end: 20,
+      start: 5,
+      end: 15,
       minimumSpeedMultiplier: 1
     },
     acceleration: {
-      x: -5,
-      y: 10
+      x: 0,
+      y: 15
     },
     maxSpeed: 0,
     startRotation: {
@@ -109,12 +109,12 @@ const makeEmitter = (body: Body) => {
     blendMode: 'normal',
     frequency: 0.00005,
     emitterLifetime: -1,
-    maxParticles: 25,
+    maxParticles: 20,
     pos: {
       x: 0,
       y: 0
     },
-    addAtBack: false,
+    addAtBack: true,
     spawnType: 'point'
   }
 
@@ -285,7 +285,7 @@ const sliceSprite = () => {
 
   for (let i = 0; i < shatteredSprites.length; i++) {
     const cc = Vertices.centre(slicedBodyParts[i].vertices)
-    Body.applyForce(slicedBodyParts[i], { x: cc.x, y: cc.y + 30 }, { x: 0, y: -0.005 })
+    // Body.applyForce(slicedBodyParts[i], { x: cc.x, y: cc.y + 30 }, { x: 0, y: -0.005 })
 
     shatteredSprites[i].anchor.x = ((hullCenter.x - cc.x) / -(max.x - min.x)) + 0.5
     shatteredSprites[i].anchor.y = ((hullCenter.y - cc.y) / -(max.y - min.y)) + 0.5
