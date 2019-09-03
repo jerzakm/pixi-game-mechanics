@@ -29,7 +29,7 @@ const world = engine.world
 // world.gravity.y = 0
 
 const posX = 600
-const posY = 500
+const posY = 650
 
 const radialCuts = 9
 const hexCuts = 3
@@ -75,8 +75,8 @@ const makeEmitter = (body: Body) => {
       end: 0.3
     },
     scale: {
-      start: 0.003 * body.mass/5,
-      end: 0.007 * body.mass/5,
+      start: 0.003 * body.mass/50,
+      end: 0.007 * body.mass/50,
       minimumScaleMultiplier: 60
     },
     color: {
@@ -285,7 +285,11 @@ const sliceSprite = () => {
 
   for (let i = 0; i < shatteredSprites.length; i++) {
     const cc = Vertices.centre(slicedBodyParts[i].vertices)
-    // Body.applyForce(slicedBodyParts[i], { x: cc.x, y: cc.y + 30 }, { x: 0, y: -0.005 })
+    console.log(force)
+    Body.setDensity(slicedBodyParts[i], 0.01)
+    const force = Vector.mult(Vector.normalise(Vector.sub(hullCenter, cc)), 0.1*(slicedBodyParts[i].mass))
+    Body.applyForce(slicedBodyParts[i], { x: cc.x, y: cc.y + 30 }, force)
+    console.log(slicedBodyParts[i].density)
 
     shatteredSprites[i].anchor.x = ((hullCenter.x - cc.x) / -(max.x - min.x)) + 0.5
     shatteredSprites[i].anchor.y = ((hullCenter.y - cc.y) / -(max.y - min.y)) + 0.5
