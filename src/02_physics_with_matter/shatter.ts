@@ -12,26 +12,28 @@ import { calcHexPoints } from "../math/polyMath";
 
 const loader = Loader.shared;
 
-const debug = false
+const debug = true
 
 const g = new Graphics()
 const container = new Container()
 const bloodEmitters = new Container()
 
 const engine = Engine.create()
-engine.constraintIterations = 5
-engine.positionIterations = 5
-engine.velocityIterations = 5
+engine.constraintIterations = 2
+engine.positionIterations = 2
+engine.velocityIterations = 2
 const world = engine.world
 world.gravity.y = 0
 
-const radialCuts = 9
-const hexCuts = 3
+const radialCuts = 8
+const hexCuts = 1
 
 
 const borders: PhysicsBody[] = []
 const cuttingLines: Line[] = []
 const sliceableObjects: SliceableObject[] = []
+
+let debugPoints: Point[] = []
 
 let cutDebug: number[] = []
 
@@ -61,6 +63,13 @@ const interactivity = () => {
   })
 }
 
+interface SliceGroup {
+  body?: Body
+  sprite?: Sprite
+  mask?: Graphics
+  emitter?: particles.Emitter
+}
+
 interface SliceableObject {
   object: PhysicsBody
   objectPolyVec: Vector[]
@@ -70,6 +79,7 @@ interface SliceableObject {
   slicedBodyMask: Graphics[]
   bloodEmitters: particles.Emitter[]
   cuttingLines: Line[]
+  sliceGroups: SliceGroup[]
 }
 
 const spawnObject = (x: number, y: number) => {
@@ -314,10 +324,14 @@ const sliceSprite = (sliceable: SliceableObject) => {
       sliceable.slicedBodyMask.push(new Graphics())
     }
     const hullVert: Vector[] = sliceable.objectPolyVec
+
     const hullCenter = {
-      x: Vertices.centre(hullVert).x + sliceable.object.physicsBody.position.x - sliceable.object.sprite.width / 2,
-      y: Vertices.centre(hullVert).y + sliceable.object.physicsBody.position.y - sliceable.object.sprite.width / 2
+      x: Vertices.centre(hullVert).x + sliceable.object.sprite.position.x - sliceable.object.sprite.width / 2,
+      y: Vertices.centre(hullVert).y + sliceable.object.sprite.position.y - sliceable.object.sprite.height / 2
     }
+
+    debugPoints.push(hullCenter)
+
     const min = {
       x: sliceable.object.sprite.position.x,
       y: sliceable.object.sprite.position.y
@@ -332,7 +346,7 @@ const sliceSprite = (sliceable: SliceableObject) => {
     for (let i = 0; i < sliceable.slicedBodySprites.length; i++) {
       const cc = Vertices.centre(sliceable.slicedBodyParts[i].vertices)
       Body.setDensity(sliceable.slicedBodyParts[i], 0.01)
-      const force = Vector.mult(Vector.normalise(Vector.sub(hullCenter, cc)), 0.1 * (sliceable.slicedBodyParts[i].mass))
+      const force = Vector.mult(Vector.normalise(Vector.sub(hullCenter, cc)), 0.01 * (sliceable.slicedBodyParts[i].mass))
       Body.applyForce(sliceable.slicedBodyParts[i], { x: cc.x, y: cc.y + 5 }, force)
 
       sliceable.slicedBodySprites[i].anchor.x = ((hullCenter.x - cc.x) / -(max.x - min.x)) + 0.5
@@ -434,6 +448,27 @@ const update = (delta: number) => {
       sliceable.slicedBodyMask[i].beginFill(0x000000)
       sliceable.slicedBodyMask[i].drawPolygon(maskPoly)
       sliceable.slicedBodyMask[i].endFill()
+
+      if (debug) {
+        sliceable.slicedBodySprites[i].alpha = 0.1
+        const vc = Vertices.centre(sliceable.slicedBodyParts[i].vertices)
+        g.beginFill(0xAA00AA)
+        g.drawCircle(vc.x, vc.y, 3)
+        g.endFill()
+
+        g.beginFill(0xAACC00)
+        for (const d of debugPoints) {
+          g.drawCircle(d.x, d.y, 3)
+        }
+        g.endFill()
+        // g.beginFill(0xAABB00)
+        // g.drawCircle(
+        //   sliceable.slicedBodySprites[i].width * sliceable.slicedBodySprites[i].anchor.x + sliceable.slicedBodySprites[i].position.x,
+        //   sliceable.slicedBodySprites[i].height * sliceable.slicedBodySprites[i].anchor.y + sliceable.slicedBodySprites[i].position.y,
+        //   3)
+        // g.endFill()
+
+      }
     }
   }
 
