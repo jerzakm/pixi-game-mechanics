@@ -20,11 +20,13 @@ export class PhysicsBody {
 
     public setSprite(sprite: Sprite) {
         const scale = this.options.width / sprite.width
-        sprite.scale.x = scale * 1.3
-        sprite.scale.y = scale * 1.3
+        sprite.scale.x = scale * 1
+        sprite.scale.y = scale * 1
         this.sprite = sprite
         this.sprite.anchor.x = 0.5
         this.sprite.anchor.y = 0.5
+        this.sprite.position.x = this.physicsBody.position.x
+        this.sprite.position.y = this.physicsBody.position.y
     }
 
     public draw(g: Graphics) {
