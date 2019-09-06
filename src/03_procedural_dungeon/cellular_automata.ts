@@ -8,14 +8,14 @@ const g = new Graphics()
 const grid: boolean [][] = []
 const newGrid: boolean [][] = []
 
-const gridSize = 64
-const cellSize = 8
+const gridSize = 128
+const cellSize = 4
 
 const spawnRate = 0.5
 const survivalTreshold = 4
 const birthTreshhold = 4
 
-const stepsPerFrame = 64
+const stepsPerFrame = 32
 
 
 export const initCellularAutomata = (parentContainer: Container) => {
@@ -27,7 +27,7 @@ export const initCellularAutomata = (parentContainer: Container) => {
         newGrid[x] = []
         for(let y= 0; y< gridSize; y++) {
             grid[x][y] = Math.random()>=spawnRate? true : false
-            newGrid[x][x] = false
+            newGrid[x][y] = grid[x][y]
         }
     }
 
@@ -76,7 +76,19 @@ const makeStep = () => {
             stepX = 0
             stepY++
         }
+    } else {
+        reassignGrids()
+        stepX = 0
+        stepY = 0
     }  
+}
+
+const reassignGrids = () => {
+    for(let x =0; x<gridSize;x++){
+        for(let y= 0; y< gridSize; y++) {
+            grid[x][y] = newGrid[x][y]
+        }
+    }
 }
 
 const update = (delta: number) => {
