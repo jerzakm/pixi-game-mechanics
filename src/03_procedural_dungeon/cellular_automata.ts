@@ -5,17 +5,24 @@ const loader = Loader.shared;
 
 const g = new Graphics()
 
-const grid: boolean [][] = []
+const initialGrid: boolean[][] = []
+const currentGrid: boolean [][] = []
 const newGrid: boolean [][] = []
 
-const gridSize = 128
-const cellSize = 4
+const gridSize = 64
+const cellSize = 8
 
-const spawnRate = 0.5
-const survivalTreshold = 4
+const spawnRate = 0.75
+const survivalTreshold = 2
 const birthTreshhold = 4
 
-const stepsPerFrame = 32
+
+const stepsPerFrame = gridSize**2
+const maxIterations = 3
+
+let stepX = 0
+let stepY = 0
+let iterationsCount = 0
 
 
 export const initCellularAutomata = (parentContainer: Container) => {
@@ -23,11 +30,13 @@ export const initCellularAutomata = (parentContainer: Container) => {
 
     
     for(let x =0; x<gridSize;x++){
-        grid[x] = []
+        initialGrid[x] = []
+        currentGrid[x] = []
         newGrid[x] = []
         for(let y= 0; y< gridSize; y++) {
-            grid[x][y] = Math.random()>=spawnRate? true : false
-            newGrid[x][y] = grid[x][y]
+            currentGrid[x][y] = Math.random()>=spawnRate? true : false
+            newGrid[x][y] = currentGrid[x][y]
+            initialGrid[x][y] = currentGrid[x][y]
         }
     }
 
@@ -43,14 +52,14 @@ const neighbourValues = (x: number, y: number, radius?:number) => {
 
     neighbourValues.push(
         //values out of bound are alive
-        isOffGrid(x-1,y-1)? true : grid[x-1][y-1],
-        isOffGrid(x-1,y)? true : grid[x-1][y], 
-        isOffGrid(x-1,y+1)? true : grid[x-1][y+1], 
-        isOffGrid(x,y-1)? true : grid[x][y-1], 
-        isOffGrid(x,y+1)? true : grid[x][y+1], 
-        isOffGrid(x+1,y-1)? true : grid[x+1][y-1],
-        isOffGrid(x+1,y)? true : grid[x+1][y], 
-        isOffGrid(x+1,y+1)? true : grid[x+1][y+1],  
+        isOffGrid(x-1,y-1)? true : currentGrid[x-1][y-1],
+        isOffGrid(x-1,y)? true : currentGrid[x-1][y], 
+        isOffGrid(x-1,y+1)? true : currentGrid[x-1][y+1], 
+        isOffGrid(x,y-1)? true : currentGrid[x][y-1], 
+        isOffGrid(x,y+1)? true : currentGrid[x][y+1], 
+        isOffGrid(x+1,y-1)? true : currentGrid[x+1][y-1],
+        isOffGrid(x+1,y)? true : currentGrid[x+1][y], 
+        isOffGrid(x+1,y+1)? true : currentGrid[x+1][y+1],  
     )
 
     return neighbourValues
@@ -62,11 +71,8 @@ const calculateNewCellValue = (x: number, y: number) => {
         
     vals.map(v => v? count++ : null)
     count>survivalTreshold? newGrid[x][y] = true : newGrid[x][y] = false
-    count>birthTreshhold && !grid[x][y] ? newGrid[x][y] = true : null
+    count>birthTreshhold && !currentGrid[x][y] ? newGrid[x][y] = true : null
 }
-
-let stepX = 0
-let stepY = 0
 
 const makeStep = () => {
     if(stepY<gridSize){
@@ -80,13 +86,14 @@ const makeStep = () => {
         reassignGrids()
         stepX = 0
         stepY = 0
+        iterationsCount++
     }  
 }
 
 const reassignGrids = () => {
     for(let x =0; x<gridSize;x++){
         for(let y= 0; y< gridSize; y++) {
-            grid[x][y] = newGrid[x][y]
+            currentGrid[x][y] = newGrid[x][y]
         }
     }
 }
@@ -105,7 +112,7 @@ const update = (delta: number) => {
 
     let stepCount = 0
 
-    while(stepCount<stepsPerFrame) {
+    while(stepCount<stepsPerFrame&&iterationsCount<maxIterations) {
         makeStep()    
         stepCount++
     }
