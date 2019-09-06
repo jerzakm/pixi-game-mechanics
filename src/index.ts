@@ -7,10 +7,9 @@ import { initPhysicsBattleFormation as initBodyMovement } from "./02_physics_wit
 import { initShootingArrows } from "./02_physics_with_matter/shootingArrows";
 import { initPlatformerMovement } from "./02_physics_with_matter/platformerMovement";
 import { initShatterDemo } from "./02_physics_with_matter/shatter";
+import { initCellularAutomata } from "./03_procedural_dungeon/cellular_automata";
 
 window.decomp = require('poly-decomp')
-
-// console.log(window.decomp)
 
 renderer.initRenderer()
 
@@ -24,7 +23,9 @@ document.body.appendChild(stats.dom)
 // const bodyMovement = initBodyMovement(renderer.stage)
 // const shootingArrows = initShootingArrows(renderer.stage)
 // const platformerMovement = initPlatformerMovement(renderer.stage)
-const shatterDemo = initShatterDemo(renderer.stage)
+// const shatterDemo = initShatterDemo(renderer.stage)
+
+const cellularAutomata = initCellularAutomata(renderer.stage)
 
 
 renderer.ticker.add((delta: number) => {
@@ -35,7 +36,8 @@ renderer.ticker.add((delta: number) => {
     // bodyMovement(delta)
     // shootingArrows(delta)
     // platformerMovement(delta)
-    shatterDemo(delta)
+    // shatterDemo(delta)
+    cellularAutomata(delta)
 
     stats.end()
 })
