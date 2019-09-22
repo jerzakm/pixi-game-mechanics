@@ -8,6 +8,9 @@ import { initShootingArrows } from "./02_physics_with_matter/shootingArrows";
 import { initPlatformerMovement } from "./02_physics_with_matter/platformerMovement";
 import { initShatterDemo } from "./02_physics_with_matter/shatter";
 import { initCellularAutomata } from "./03_procedural_dungeon/cellular_automata";
+import { initRenderDungeonGrid } from "./03_procedural_dungeon/render_dungeon";
+import { initAudioPlayLocation } from "./04_audio/audioLoc";
+import { initDirectionalSpritesheet } from "./02_physics_with_matter/directionalSpritesheet";
 
 window.decomp = require('poly-decomp')
 
@@ -24,8 +27,9 @@ document.body.appendChild(stats.dom)
 // const shootingArrows = initShootingArrows(renderer.stage)
 // const platformerMovement = initPlatformerMovement(renderer.stage)
 // const shatterDemo = initShatterDemo(renderer.stage)
-
-const cellularAutomata = initCellularAutomata(renderer.stage)
+// const cellularAutomata = initCellularAutomata(renderer.stage)
+// const audioPositionDemo = initAudioPlayLocation(renderer.stage)
+const directionalSpritesheet = initDirectionalSpritesheet(renderer.stage)
 
 
 renderer.ticker.add((delta: number) => {
@@ -37,7 +41,9 @@ renderer.ticker.add((delta: number) => {
     // shootingArrows(delta)
     // platformerMovement(delta)
     // shatterDemo(delta)
-    cellularAutomata(delta)
+    // cellularAutomata(delta)
+    // audioPositionDemo(delta)
+    directionalSpritesheet(delta)
 
     stats.end()
 })

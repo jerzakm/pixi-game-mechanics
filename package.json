@@ -12,11 +12,13 @@
   "dependencies": {
     "color": "^3.1.2",
     "combokeys": "^3.0.1",
+    "howler": "^2.1.2",
     "hull.js": "^1.0.0",
     "line-intersect": "^2.2.1",
     "matter-js": "^0.14.2",
     "pixi-filters": "^3.0.3",
     "pixi-particles": "^4.1.2",
+    "pixi-viewport": "^4.2.2",
     "pixi.js": "^5.0.0-rc.2",
     "poly-decomp": "^0.3.0",
     "polyk": "^0.24.0",
@@ -25,6 +27,7 @@
   "devDependencies": {
     "@types/color": "^3.0.0",
     "@types/combokeys": "^2.4.6",
+    "@types/howler": "^2.1.1",
     "@types/matter-js": "^0.10.2",
     "@types/node": "^12.0.2",
     "@types/node-sass": "^4.11.0",
