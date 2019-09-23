@@ -11,6 +11,7 @@ import { initCellularAutomata } from "./03_procedural_dungeon/cellular_automata"
 import { initRenderDungeonGrid } from "./03_procedural_dungeon/render_dungeon";
 import { initAudioPlayLocation } from "./04_audio/audioLoc";
 import { initDirectionalSpritesheet } from "./02_physics_with_matter/directionalSpritesheet";
+import { initFootstepsAudio } from "./04_audio/footeps";
 
 window.decomp = require('poly-decomp')
 
@@ -29,7 +30,8 @@ document.body.appendChild(stats.dom)
 // const shatterDemo = initShatterDemo(renderer.stage)
 // const cellularAutomata = initCellularAutomata(renderer.stage)
 // const audioPositionDemo = initAudioPlayLocation(renderer.stage)
-const directionalSpritesheet = initDirectionalSpritesheet(renderer.stage)
+// const directionalSpritesheet = initDirectionalSpritesheet(renderer.stage)
+const audioFootsteps = initFootstepsAudio(renderer.stage)
 
 
 renderer.ticker.add((delta: number) => {
@@ -43,7 +45,8 @@ renderer.ticker.add((delta: number) => {
     // shatterDemo(delta)
     // cellularAutomata(delta)
     // audioPositionDemo(delta)
-    directionalSpritesheet(delta)
+    // directionalSpritesheet(delta)
+    audioFootsteps(delta)
 
     stats.end()
 })

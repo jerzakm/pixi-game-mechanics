@@ -31,8 +31,8 @@ export const initDirectionalSpritesheet = (parentContainer: Container) => {
         spr = new AnimatedSprite(texture)
         spr.x = 300
         spr.y = 300
-        spr.scale.x = 0.3
-        spr.scale.y = 0.3
+        spr.scale.x = 0.2
+        spr.scale.y = 0.2
         spr.play()
         spr.animationSpeed = 0.7
 
@@ -74,7 +74,7 @@ const update = (delta: number) => {
     g.lineTo(facing.x, facing.y)
     g.lineStyle(0)
     angle = spr.angle
-    spr.animationSpeed = delta * 0.25
+    spr.animationSpeed = delta * 0.29
 
     if (ticker % 13 == 0) {
       splashes.push(
@@ -113,7 +113,7 @@ const spriteHandler = (delta: number) => {
       spr.angle = goalAngle + 90
     }
 
-    const newPos = findPointWithAngle(pos, angle - 90, 5 * delta)
+    const newPos = findPointWithAngle(pos, angle - 90, 7 * delta)
     spr.x = newPos.x
     spr.y = newPos.y
   }
@@ -126,7 +126,7 @@ const splashHandler = (delta: number) => {
     const s = splashes[i]
     if (s.time > 0) {
       s.time -= 5 * Math.random()
-      s.r -= Math.random()
+      s.r -= Math.random() / 2
       splashG.lineStyle(2, 0xaaEEbb, s.r / 35)
       splashG.drawCircle(s.pos.x, s.pos.y, s.r)
       splashG.lineStyle(0)
