@@ -11,8 +11,8 @@ const container = new Container()
 const label = new Text(`label`, { fill: '#ffffff', wordWrap: true, wordWrapWidth: 300, fontSize: 12 })
 const player = {
   postion: {
-    x: 200,
-    y: 200
+    x: window.innerWidth / 2,
+    y: window.innerHeight / 2
   },
   angle: 90
 }
@@ -22,7 +22,14 @@ const goal: Point = {
   y: 300
 }
 
-const listener: Point = { x: 600, y: 500 }
+interface Spook {
+  position: Point
+  goal: Point
+  angle: number
+  sound: Howl
+}
+
+const listener: Point = { x: window.innerWidth / 2, y: window.innerHeight / 2 }
 
 const sound = new Howl({
   src: ['footsteps.mp3'],
@@ -97,6 +104,9 @@ const walk = (delta: number) => {
   if (dist > 2) {
     const np = findPointWithAngle(player.postion, player.angle, walkingSpeed * delta)
     player.postion = np
+  } else if (dist < 2) {
+    goal.x = window.innerWidth * Math.random() * 0.9 + 50
+    goal.y = window.innerHeight * Math.random() * 0.9 + 50
   }
 
   nextStep > 0 ? nextStep -= delta * walkingSpeed : nextStep = stepTime
