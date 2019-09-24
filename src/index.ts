@@ -12,6 +12,7 @@ import { initRenderDungeonGrid } from "./03_procedural_dungeon/render_dungeon";
 import { initAudioPlayLocation } from "./04_audio/audioLoc";
 import { initDirectionalSpritesheet } from "./02_physics_with_matter/directionalSpritesheet";
 import { initFootstepsAudio } from "./04_audio/footeps";
+import { initFpsJuice } from "./05_juice/fpsJuice";
 
 window.decomp = require('poly-decomp')
 
@@ -31,12 +32,13 @@ document.body.appendChild(stats.dom)
 // const cellularAutomata = initCellularAutomata(renderer.stage)
 // const audioPositionDemo = initAudioPlayLocation(renderer.stage)
 // const directionalSpritesheet = initDirectionalSpritesheet(renderer.stage)
-const audioFootsteps = initFootstepsAudio(renderer.stage)
+// const audioFootsteps = initFootstepsAudio(renderer.stage)
+const fpsJuice = initFpsJuice(renderer.stage)
 
 
 renderer.ticker.add((delta: number) => {
     stats.begin()
-
+    fpsJuice(delta)
     // shadowcasting()
     // physicsDemo(delta)
     // bodyMovement(delta)
@@ -46,7 +48,7 @@ renderer.ticker.add((delta: number) => {
     // cellularAutomata(delta)
     // audioPositionDemo(delta)
     // directionalSpritesheet(delta)
-    audioFootsteps(delta)
+    // audioFootsteps(delta)
 
     stats.end()
 })
