@@ -81,7 +81,6 @@ const initControlls = () => {
       }
     }
   })
-
 }
 
 const horizontalMovementTick = () => {

@@ -10,7 +10,7 @@ const container = new Container()
 
 const label = new Text(`label`, { fill: '#ffffff', wordWrap: true, wordWrapWidth: 300, fontSize: 12 })
 const player = {
-  postion: {
+  position: {
     x: window.innerWidth / 2,
     y: window.innerHeight / 2
   },
@@ -93,17 +93,17 @@ const steps: Step[] = []
 const walk = (delta: number) => {
   walkingSpeed = running ? 2 : 1
 
-  const angle = calcAngleBetweenPoints(player.postion, goal)
+  const angle = calcAngleBetweenPoints(player.position, goal)
   player.angle = angle
   // const angleDiff = player.angle - angle
   // if (Math.abs(angleDiff) > 0.3) {
   //   const rotate = (angleDiff / Math.abs(angleDiff)) * delta * Math.abs(angleDiff) * 0.1
   //   player.angle -= rotate
   // }
-  const dist = distanceBetweenPoints(player.postion, goal)
+  const dist = distanceBetweenPoints(player.position, goal)
   if (dist > 2) {
-    const np = findPointWithAngle(player.postion, player.angle, walkingSpeed * delta)
-    player.postion = np
+    const np = findPointWithAngle(player.position, player.angle, walkingSpeed * delta)
+    player.position = np
   } else if (dist < 2) {
     goal.x = window.innerWidth * Math.random() * 0.9 + 50
     goal.y = window.innerHeight * Math.random() * 0.9 + 50
@@ -113,16 +113,16 @@ const walk = (delta: number) => {
 
   if (nextStep <= 0) {
     const anglemod = leftStep ? 90 : -90
-    const sp = findPointWithAngle(player.postion, player.angle + anglemod, 25)
+    const sp = findPointWithAngle(player.position, player.angle + anglemod, 25)
     steps.push({
       position: sp,
       r: 15 * (1 + walkingSpeed / 10)
     })
     const soundPick = Math.ceil(Math.random() * 6)
     const soundloc = {
-      x: -(listener.x - player.postion.x) / 65,
+      x: -(listener.x - player.position.x) / 65,
       y: 0,
-      z: -(listener.y - player.postion.y) / 65,
+      z: -(listener.y - player.position.y) / 65,
     }
     sound.play(`f${soundPick}`)
     sound.pos(soundloc.x, soundloc.y, soundloc.z)
@@ -133,7 +133,7 @@ const walk = (delta: number) => {
       soundY: ${soundloc.y.toFixed(3)}
       soundZ: ${soundloc.z.toFixed(3)}
 
-      spookLoc:     x:${player.postion.x} y: ${player.postion.y}
+      spookLoc:     x:${player.position.x} y: ${player.position.y}
       listenerLoc:   x:${listener.x} y: ${listener.y}
 
       running[SHIFT] : ${running}
@@ -164,9 +164,9 @@ const update = (delta: number) => {
 
   // player draw
   g.lineStyle(1, 0x999999)
-  g.drawCircle(player.postion.x, player.postion.y, 8)
-  const facing = findPointWithAngle(player.postion, player.angle, 15)
-  g.moveTo(player.postion.x, player.postion.y)
+  g.drawCircle(player.position.x, player.position.y, 8)
+  const facing = findPointWithAngle(player.position, player.angle, 15)
+  g.moveTo(player.position.x, player.position.y)
   g.lineTo(facing.x, facing.y)
   g.lineStyle(0)
   //goal draw

@@ -14,6 +14,7 @@ import { initDirectionalSpritesheet } from "./02_physics_with_matter/directional
 import { initFootstepsAudio } from "./04_audio/footeps";
 import { initFpsJuice } from "./05_juice/fpsJuice";
 import { initScreenShake } from "./05_juice/screenShake";
+import { initShootingJuice } from "./05_juice/shooting";
 
 window.decomp = require('poly-decomp')
 
@@ -36,6 +37,7 @@ document.body.appendChild(stats.dom)
 // const audioFootsteps = initFootstepsAudio(renderer.stage)
 // const fpsJuice = initFpsJuice(renderer.stage)
 const screenShake = initScreenShake(renderer.stage)
+const shootingJuice = initShootingJuice(renderer.stage)
 
 
 renderer.ticker.add((delta: number) => {
@@ -51,7 +53,8 @@ renderer.ticker.add((delta: number) => {
     // directionalSpritesheet(delta)
     // audioFootsteps(delta)
     // fpsJuice(delta)
-    screenShake(delta)
-    
+    // screenShake(delta)
+    shootingJuice(delta)
+
     stats.end()
 })
