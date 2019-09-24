@@ -1,9 +1,10 @@
-import { Graphics, Container, Loader, interaction, Text } from "pixi.js";
-import { Body, Engine, World, Vector, Constraint, Bodies } from "matter-js";
+import { Graphics, Container, Loader, interaction, Text, Texture } from "pixi.js";
+import { Body, Engine, World, Vector, Bodies, Events } from "matter-js";
 import { PhysicsBody } from "../02_physics_with_matter/PhysicsBody";
 import { findPointWithAngle, Point, distanceBetweenPoints, calcAngleBetweenPoints } from "../math/coordMath";
 import { renderer, ticker, stage } from "../core/renderer";
 import { Howl } from 'howler';
+import * as particles from 'pixi-particles'
 
 const loader = Loader.shared;
 
@@ -17,9 +18,12 @@ const world = engine.world;
 world.gravity.x = 0
 world.gravity.y = 0
 
-const TARGET_FPS = 75
+const TARGET_FPS = 144
 
 const listener: Point = { x: window.innerWidth / 2, y: window.innerHeight / 2 }
+
+const bloodEmittersContainer = new Container()
+const emitters: particles.Emitter[] = []
 
 const shots = new Howl({
   src: ['gunshots.mp3'],
@@ -34,12 +38,7 @@ const borders: PhysicsBody[] = []
 
 const player: Body = Bodies.circle(window.innerWidth / 2, window.innerHeight / 2, 8)
 
-interface Bullet {
-  body: Body,
-  sound: Howl
-}
-
-const bullets: PhysicsBody[] = []
+const bullets: Body[] = []
 const dummies: PhysicsBody[] = []
 const playerData = {
   angle: 0,
@@ -55,13 +54,130 @@ export const initShootingJuice = (parentContainer: Container) => {
   parentContainer.addChild(container)
   container.addChild(g)
   container.addChild(label)
+  container.addChild(bloodEmittersContainer)
   label.position.x = 300
   label.position.y = 20
   playerSetup()
   initControlls()
   makeBorders()
-  spawnDummies(100, 30)
+  spawnDummies(50, 45)
+  collisionHandling()
+
+  label.position.x = listener.x - 27
+  label.position.y = listener.y - 10
+  label.text = `LISTENER`
+
+
   return update
+}
+
+const collisionHandling = () => {
+  Events.on(engine, 'collisionActive', function (event) {
+    for (let i = 0; i < event.pairs.length; i++) {
+      const pair = event.pairs[i]
+      if (pair.bodyA.label == 'bullet') {
+        playImpactSound(pair.bodyA.position)
+        World.remove(world, pair.bodyA)
+        removeBullet(pair.bodyA.id)
+        makeBloodEmitter(pair.bodyA)
+      }
+      if (pair.bodyB.label == 'bullet') {
+        World.remove(world, pair.bodyB)
+        playImpactSound(pair.bodyB.position)
+        removeBullet(pair.bodyB.id)
+        makeBloodEmitter(pair.bodyA)
+      }
+    }
+  });
+}
+
+const playImpactSound = (position: Point) => {
+  const impact = new Howl({
+    src: ['bulletImpact.mp3'],
+    volume: 0.3,
+    loop: false,
+    sprite: {
+      f1: [240, 1500]
+    }
+  })
+
+  const soundloc = {
+    x: -(listener.x - position.x) / 100,
+    y: 0,
+    z: -(listener.y - position.y) / 100,
+  }
+  impact.pos(soundloc.x, soundloc.y, soundloc.z)
+
+  impact.play('f1')
+}
+
+const makeBloodEmitter = (body: Body) => {
+  const emitterOptions = {
+    alpha: {
+      start: 0.7,
+      end: 0.3
+    },
+    scale: {
+      start: 0.002 * body.mass / 150,
+      end: 0.0024 * body.mass / 150,
+      minimumScaleMultiplier: 60
+    },
+    color: {
+      start: '#ff0000',
+      end: '#e30707'
+    },
+    speed: {
+      start: 1,
+      end: 5,
+      minimumSpeedMultiplier: 1
+    },
+    acceleration: {
+      x: 0,
+      y: 25
+    },
+    maxSpeed: 0,
+    startRotation: {
+      min: -75,
+      max: 75
+    },
+    noRotation: false,
+    rotationSpeed: {
+      min: 0,
+      max: 50
+    },
+    lifetime: {
+      min: 1,
+      max: 2
+    },
+    blendMode: 'normal',
+    frequency: 0.005,
+    emitterLifetime: 0.6,
+    maxParticles: 20,
+    pos: {
+      x: 0,
+      y: 0
+    },
+    addAtBack: true,
+    spawnType: 'point'
+  }
+
+  const emitter = new particles.Emitter(
+    bloodEmittersContainer,
+    [Texture.from('blood.png')],
+    emitterOptions
+  )
+  emitter.updateSpawnPos(body.position.x, body.position.y)
+  emitter.emit = true
+  emitter.playOnceAndDestroy()
+  emitters.push(emitter)
+}
+
+const removeBullet = (id: number) => {
+  for (var i = bullets.length - 1; i >= 0; --i) {
+    if (bullets[i].id == id) {
+      bullets.splice(i, 1);
+    }
+  }
 }
 
 const playerSetup = () => {
@@ -85,7 +201,6 @@ const playerSetup = () => {
 
 const initControlls = () => {
   window.addEventListener('keydown', (e: KeyboardEvent) => {
-    e.preventDefault()
     switch (e.code) {
       case 'KeyD': {
         playerData.moving.x = 1
@@ -140,24 +255,20 @@ const drawPlayer = () => {
 }
 
 const shoot = () => {
-  const bullet = new PhysicsBody({
-    x: playerData.facing.x,
-    y: playerData.facing.y,
-    width: 2,
-    height: 2
-  })
+  const bullet = Bodies.rectangle(playerData.facing.x, playerData.facing.y, 3, 3)
+  bullet.label = 'bullet'
   bullets.push(bullet)
 
-  Body.setDensity(bullet.physicsBody, 0.05)
-  bullet.physicsBody.restitution = 0
-  bullet.physicsBody.frictionAir = 0
+  Body.setDensity(bullet, 0.05)
+  bullet.restitution = 0
+  bullet.frictionAir = 0
 
-  World.add(world, bullet.physicsBody)
-  const bulletVelocity = Vector.mult(Vector.normalise(Vector.sub(playerData.facing, player.position)), 8)
-  Body.setVelocity(bullet.physicsBody, bulletVelocity)
+  World.add(world, bullet)
+  const bulletVelocity = Vector.mult(Vector.normalise(Vector.sub(playerData.facing, player.position)), 15)
+  Body.setVelocity(bullet, bulletVelocity)
 
   const kickbackForce = Vector.neg(Vector.div(Vector.normalise(Vector.sub(playerData.facing, player.position)), 4))
-  Body.applyForce(player, bullet.physicsBody.position, kickbackForce)
+  Body.applyForce(player, bullet.position, kickbackForce)
   shakesCount = 2
 
   const soundloc = {
@@ -167,6 +278,8 @@ const shoot = () => {
   }
   shots.pos(soundloc.x, soundloc.y, soundloc.z)
   shots.play('f1')
+
+
 }
 
 const drawGround = () => {
@@ -261,11 +374,16 @@ const update = (delta: number) => {
 
   g.lineStyle(2, 0xEECC00)
   for (const bullet of bullets) {
-    bullet.draw(g)
+    if (bullet) {
+      g.drawCircle(bullet.position.x, bullet.position.y, 2)
+    } else console.log('undef bullet')
   }
   g.lineStyle(2, 0xFFFFFF)
   for (const dummy of dummies) {
     dummy.draw(g)
+  }
+  for (const emitter of emitters) {
+    emitter.update(delta)
   }
   g.lineStyle(0)
 }
