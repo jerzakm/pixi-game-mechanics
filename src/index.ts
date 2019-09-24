@@ -13,6 +13,7 @@ import { initAudioPlayLocation } from "./04_audio/audioLoc";
 import { initDirectionalSpritesheet } from "./02_physics_with_matter/directionalSpritesheet";
 import { initFootstepsAudio } from "./04_audio/footeps";
 import { initFpsJuice } from "./05_juice/fpsJuice";
+import { initScreenShake } from "./05_juice/screenShake";
 
 window.decomp = require('poly-decomp')
 
@@ -33,12 +34,12 @@ document.body.appendChild(stats.dom)
 // const audioPositionDemo = initAudioPlayLocation(renderer.stage)
 // const directionalSpritesheet = initDirectionalSpritesheet(renderer.stage)
 // const audioFootsteps = initFootstepsAudio(renderer.stage)
-const fpsJuice = initFpsJuice(renderer.stage)
+// const fpsJuice = initFpsJuice(renderer.stage)
+const screenShake = initScreenShake(renderer.stage)
 
 
 renderer.ticker.add((delta: number) => {
     stats.begin()
-    fpsJuice(delta)
     // shadowcasting()
     // physicsDemo(delta)
     // bodyMovement(delta)
@@ -49,6 +50,8 @@ renderer.ticker.add((delta: number) => {
     // audioPositionDemo(delta)
     // directionalSpritesheet(delta)
     // audioFootsteps(delta)
-
+    // fpsJuice(delta)
+    screenShake(delta)
+    
     stats.end()
 })
