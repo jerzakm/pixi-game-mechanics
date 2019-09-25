@@ -34,10 +34,10 @@ document.body.appendChild(stats.dom)
 // const cellularAutomata = initCellularAutomata(renderer.stage)
 // const audioPositionDemo = initAudioPlayLocation(renderer.stage)
 // const directionalSpritesheet = initDirectionalSpritesheet(renderer.stage)
-// const audioFootsteps = initFootstepsAudio(renderer.stage)
+const audioFootsteps = initFootstepsAudio(renderer.stage)
 // const fpsJuice = initFpsJuice(renderer.stage)
-const screenShake = initScreenShake(renderer.stage)
-const shootingJuice = initShootingJuice(renderer.stage)
+// const screenShake = initScreenShake(renderer.stage)
+// const shootingJuice = initShootingJuice(renderer.stage)
 
 
 renderer.ticker.add((delta: number) => {
@@ -51,10 +51,10 @@ renderer.ticker.add((delta: number) => {
     // cellularAutomata(delta)
     // audioPositionDemo(delta)
     // directionalSpritesheet(delta)
-    // audioFootsteps(delta)
+    audioFootsteps(delta)
     // fpsJuice(delta)
     // screenShake(delta)
-    shootingJuice(delta)
+    // shootingJuice(delta)
 
     stats.end()
 })

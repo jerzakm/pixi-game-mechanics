@@ -1,15 +1,19 @@
-import { Graphics, Container, Loader, interaction, Text, Texture } from "pixi.js";
+import { Graphics, Container, Loader, interaction, Text, Texture, Sprite, filters, Rectangle, SCALE_MODES } from "pixi.js";
 import { Body, Engine, World, Vector, Bodies, Events } from "matter-js";
 import { PhysicsBody } from "../02_physics_with_matter/PhysicsBody";
 import { findPointWithAngle, Point, distanceBetweenPoints, calcAngleBetweenPoints } from "../math/coordMath";
 import { renderer, ticker, stage } from "../core/renderer";
 import { Howl } from 'howler';
 import * as particles from 'pixi-particles'
+import * as PixiFilters from 'pixi-filters'
+import { ShockwaveFilter } from "pixi-filters";
+import { JuiceAlphaShader } from "./JuiceAlpha";
 
 const loader = Loader.shared;
 
 const g = new Graphics()
 const container = new Container()
+const topG = new Graphics()
 
 const label = new Text(`label`, { fill: '#ffffff', wordWrap: true, wordWrapWidth: 300, fontSize: 12 })
 
@@ -17,6 +21,8 @@ const engine = Engine.create()
 const world = engine.world;
 world.gravity.x = 0
 world.gravity.y = 0
+
+let shockwave: undefined | ShockwaveFilter
 
 const TARGET_FPS = 144
 
@@ -38,6 +44,8 @@ const borders: PhysicsBody[] = []
 
 const player: Body = Bodies.circle(window.innerWidth / 2, window.innerHeight / 2, 8)
 
+let darkness: undefined | Sprite
+
 const bullets: Body[] = []
 const dummies: PhysicsBody[] = []
 const playerData = {
@@ -49,10 +57,15 @@ const playerData = {
   }
 }
 
+const shockwaves: ShockwaveFilter[] = []
+const juiceAlpha = new JuiceAlphaShader()
+
 export const initShootingJuice = (parentContainer: Container) => {
   ticker.maxFPS = TARGET_FPS
   parentContainer.addChild(container)
   container.addChild(g)
+  darkness = Sprite.from('asd.png')
+  container.addChild(darkness)
   container.addChild(label)
   container.addChild(bloodEmittersContainer)
   label.position.x = 300
@@ -67,9 +80,34 @@ export const initShootingJuice = (parentContainer: Container) => {
   label.position.y = listener.y - 10
   label.text = `LISTENER`
 
-
+  parentContainer.addChild(topG)
   return update
 }
+
+const addShockWave = (location: Point, strength: number) => {
+  const shockwave = new ShockwaveFilter([location.x, location.y], {
+    amplitude: 1 * strength,
+    speed: 80,
+    brightness: 100,
+    wavelength: 7 * strength,
+    radius: 50 * strength
+  })
+  shockwaves.push(shockwave)
+}
+
+const processShaders = (delta: number) => {
+  for (const s of shockwaves) {
+    s.time += 0.1 * delta
+  }
+
+  if (darkness) {
+    darkness.filters = [
+      ...shockwaves,
+      juiceAlpha
+    ]
+  }
+}
+
 
 const collisionHandling = () => {
   Events.on(engine, 'collisionActive', function (event) {
@@ -80,12 +118,14 @@ const collisionHandling = () => {
         World.remove(world, pair.bodyA)
         removeBullet(pair.bodyA.id)
         makeBloodEmitter(pair.bodyA)
+        addShockWave(pair.bodyA.position, 5)
       }
       if (pair.bodyB.label == 'bullet') {
         World.remove(world, pair.bodyB)
         playImpactSound(pair.bodyB.position)
         removeBullet(pair.bodyB.id)
         makeBloodEmitter(pair.bodyA)
+        addShockWave(pair.bodyB.position, 5)
       }
     }
   });
@@ -245,12 +285,12 @@ const initControlls = () => {
 }
 
 const drawPlayer = () => {
-  g.lineStyle(1, 0xCECECE)
-  g.drawCircle(player.position.x, player.position.y, 8)
+  topG.lineStyle(1, 0xCECECE)
+  topG.drawCircle(player.position.x, player.position.y, 8)
   playerData.facing = findPointWithAngle(player.position, playerData.angle, 15)
-  g.moveTo(player.position.x, player.position.y)
-  g.lineTo(playerData.facing.x, playerData.facing.y)
-  g.lineStyle(0)
+  topG.moveTo(player.position.x, player.position.y)
+  topG.lineTo(playerData.facing.x, playerData.facing.y)
+  topG.lineStyle(0)
   player.angularSpeed = 0
 }
 
@@ -279,6 +319,7 @@ const shoot = () => {
   shots.pos(soundloc.x, soundloc.y, soundloc.z)
   shots.play('f1')
 
+  addShockWave(player.position, 10)
 
 }
 
@@ -355,7 +396,9 @@ const update = (delta: number) => {
   }
   movementTick()
   g.clear()
+  topG.clear()
   drawGround()
+
 
   g.beginFill(0x888888)
   g.drawCircle(listener.x, listener.y, 40)
@@ -386,4 +429,9 @@ const update = (delta: number) => {
     emitter.update(delta)
   }
   g.lineStyle(0)
+
+  if (shockwave) {
+    shockwave.time > 3 ? shockwave.time = 0 : shockwave.time += 0.01
+  }
+  processShaders(delta)
 }
