@@ -40,6 +40,97 @@ const shots = new Howl({
   }
 });
 
+const walker = {
+  position: {
+    x: window.innerWidth / 2,
+    y: window.innerHeight / 2
+  },
+  angle: 90
+}
+
+const walkerGoal: Point = {
+  x: 800,
+  y: 300
+}
+
+const footsteps = new Howl({
+  src: ['footsteps.mp3'],
+  volume: 1.3,
+  loop: false,
+  sprite: {
+    f1: [15, 600],
+    f2: [1250, 600],
+    f3: [2350, 600],
+    f4: [3400, 600],
+    f5: [4450, 650],
+    f6: [5460, 650]
+  }
+});
+
+const walkerStepTime = 50
+
+interface Step {
+  position: Point
+  r: number
+}
+let walkingSpeed = 0
+let leftStep = true
+let nextStep = 0
+
+const steps: Step[] = []
+
+const running = false
+
+const walk = (delta: number) => {
+  walkingSpeed = running ? 2 : 1
+
+  const angle = calcAngleBetweenPoints(walker.position, walkerGoal)
+  walker.angle = angle
+  // const angleDiff = player.angle - angle
+  // if (Math.abs(angleDiff) > 0.3) {
+  //   const rotate = (angleDiff / Math.abs(angleDiff)) * delta * Math.abs(angleDiff) * 0.1
+  //   player.angle -= rotate
+  // }
+  const dist = distanceBetweenPoints(walker.position, walkerGoal)
+  if (dist > 2) {
+    const np = findPointWithAngle(walker.position, walker.angle, walkingSpeed * delta)
+    walker.position = np
+  } else if (dist < 2) {
+    walkerGoal.x = window.innerWidth * Math.random() * 0.9 + 50
+    walkerGoal.y = window.innerHeight * Math.random() * 0.9 + 50
+  }
+
+  nextStep > 0 ? nextStep -= delta * walkingSpeed : nextStep = walkerStepTime
+
+  if (nextStep <= 0) {
+    const anglemod = leftStep ? 90 : -90
+    const sp = findPointWithAngle(walker.position, walker.angle + anglemod, 25)
+    steps.push({
+      position: sp,
+      r: 15 * (1 + walkingSpeed / 10)
+    })
+    const soundPick = Math.ceil(Math.random() * 6)
+    const soundloc = {
+      x: -(listener.x - walker.position.x) / 65,
+      y: 0,
+      z: -(listener.y - walker.position.y) / 65,
+    }
+    footsteps.play(`f${soundPick}`)
+    footsteps.pos(soundloc.x, soundloc.y, soundloc.z)
+    leftStep ? leftStep = false : leftStep = true
+    addShockWave(sp, 2)
+  }
+}
+
+const renderSteps = (delta: number) => {
+  g.lineStyle(1, 0x888888)
+  for (const step of steps) {
+    g.drawCircle(step.position.x, step.position.y, step.r)
+    step.r -= delta * 0.5
+  }
+  g.lineStyle(0)
+}
+
 const borders: PhysicsBody[] = []
 
 const player: Body = Bodies.circle(window.innerWidth / 2, window.innerHeight / 2, 8)
@@ -87,7 +178,7 @@ export const initShootingJuice = (parentContainer: Container) => {
 const addShockWave = (location: Point, strength: number) => {
   const shockwave = new ShockwaveFilter([location.x, location.y], {
     amplitude: 1 * strength,
-    speed: 80,
+    speed: 10 * strength,
     brightness: 100,
     wavelength: 7 * strength,
     radius: 50 * strength
@@ -433,5 +524,21 @@ const update = (delta: number) => {
   if (shockwave) {
     shockwave.time > 3 ? shockwave.time = 0 : shockwave.time += 0.01
   }
+
+  // player draw
+  g.beginFill(0xFF0000)
+  g.drawCircle(walker.position.x, walker.position.y, 20)
+  g.endFill()
+  //goal draw
+  g.lineStyle(2, 0xAA1010)
+  g.drawCircle(walkerGoal.x, walkerGoal.y, 15)
+  g.lineStyle(0)
+
+  renderSteps(delta)
+
+  walk(delta)
+
   processShaders(delta)
+  listener.x = player.position.x
+  listener.y = player.position.y
 }

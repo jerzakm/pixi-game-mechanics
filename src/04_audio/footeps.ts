@@ -9,7 +9,7 @@ const g = new Graphics()
 const container = new Container()
 
 const label = new Text(`label`, { fill: '#ffffff', wordWrap: true, wordWrapWidth: 300, fontSize: 12 })
-const player = {
+const walker = {
   position: {
     x: window.innerWidth / 2,
     y: window.innerHeight / 2
@@ -17,21 +17,14 @@ const player = {
   angle: 90
 }
 
-const goal: Point = {
+const walkerGoal: Point = {
   x: 800,
   y: 300
 }
 
-interface Spook {
-  position: Point
-  goal: Point
-  angle: number
-  sound: Howl
-}
-
 const listener: Point = { x: window.innerWidth / 2, y: window.innerHeight / 2 }
 
-const sound = new Howl({
+const footsteps = new Howl({
   src: ['footsteps.mp3'],
   volume: 1.3,
   loop: false,
@@ -58,8 +51,8 @@ export const initFootstepsAudio = (parentContainer: Container) => {
   g.buttonMode = true
   g.on('pointerdown', (e: interaction.InteractionEvent) => {
     const p = e.data.getLocalPosition(g)
-    goal.x = p.x
-    goal.y = p.y
+    walkerGoal.x = p.x
+    walkerGoal.y = p.y
   })
 
   window.addEventListener('keydown', (e) => {
@@ -77,7 +70,7 @@ export const initFootstepsAudio = (parentContainer: Container) => {
   return update
 }
 
-const stepTime = 50
+const walkerStepTime = 50
 
 interface Step {
   position: Point
@@ -93,39 +86,39 @@ const steps: Step[] = []
 const walk = (delta: number) => {
   walkingSpeed = running ? 2 : 1
 
-  const angle = calcAngleBetweenPoints(player.position, goal)
-  player.angle = angle
+  const angle = calcAngleBetweenPoints(walker.position, walkerGoal)
+  walker.angle = angle
   // const angleDiff = player.angle - angle
   // if (Math.abs(angleDiff) > 0.3) {
   //   const rotate = (angleDiff / Math.abs(angleDiff)) * delta * Math.abs(angleDiff) * 0.1
   //   player.angle -= rotate
   // }
-  const dist = distanceBetweenPoints(player.position, goal)
+  const dist = distanceBetweenPoints(walker.position, walkerGoal)
   if (dist > 2) {
-    const np = findPointWithAngle(player.position, player.angle, walkingSpeed * delta)
-    player.position = np
+    const np = findPointWithAngle(walker.position, walker.angle, walkingSpeed * delta)
+    walker.position = np
   } else if (dist < 2) {
-    goal.x = window.innerWidth * Math.random() * 0.9 + 50
-    goal.y = window.innerHeight * Math.random() * 0.9 + 50
+    walkerGoal.x = window.innerWidth * Math.random() * 0.9 + 50
+    walkerGoal.y = window.innerHeight * Math.random() * 0.9 + 50
   }
 
-  nextStep > 0 ? nextStep -= delta * walkingSpeed : nextStep = stepTime
+  nextStep > 0 ? nextStep -= delta * walkingSpeed : nextStep = walkerStepTime
 
   if (nextStep <= 0) {
     const anglemod = leftStep ? 90 : -90
-    const sp = findPointWithAngle(player.position, player.angle + anglemod, 25)
+    const sp = findPointWithAngle(walker.position, walker.angle + anglemod, 25)
     steps.push({
       position: sp,
       r: 15 * (1 + walkingSpeed / 10)
     })
     const soundPick = Math.ceil(Math.random() * 6)
     const soundloc = {
-      x: -(listener.x - player.position.x) / 65,
+      x: -(listener.x - walker.position.x) / 65,
       y: 0,
-      z: -(listener.y - player.position.y) / 65,
+      z: -(listener.y - walker.position.y) / 65,
     }
-    sound.play(`f${soundPick}`)
-    sound.pos(soundloc.x, soundloc.y, soundloc.z)
+    footsteps.play(`f${soundPick}`)
+    footsteps.pos(soundloc.x, soundloc.y, soundloc.z)
     leftStep ? leftStep = false : leftStep = true
 
     label.text = `
@@ -133,7 +126,7 @@ const walk = (delta: number) => {
       soundY: ${soundloc.y.toFixed(3)}
       soundZ: ${soundloc.z.toFixed(3)}
 
-      spookLoc:     x:${player.position.x} y: ${player.position.y}
+      spookLoc:     x:${walker.position.x} y: ${walker.position.y}
       listenerLoc:   x:${listener.x} y: ${listener.y}
 
       running[SHIFT] : ${running}
@@ -164,14 +157,14 @@ const update = (delta: number) => {
 
   // player draw
   g.lineStyle(1, 0x999999)
-  g.drawCircle(player.position.x, player.position.y, 8)
-  const facing = findPointWithAngle(player.position, player.angle, 15)
-  g.moveTo(player.position.x, player.position.y)
+  g.drawCircle(walker.position.x, walker.position.y, 8)
+  const facing = findPointWithAngle(walker.position, walker.angle, 15)
+  g.moveTo(walker.position.x, walker.position.y)
   g.lineTo(facing.x, facing.y)
   g.lineStyle(0)
   //goal draw
   g.lineStyle(2, 0xAA1010)
-  g.drawCircle(goal.x, goal.y, 15)
+  g.drawCircle(walkerGoal.x, walkerGoal.y, 15)
   g.lineStyle(0)
 
   renderSteps(delta)
