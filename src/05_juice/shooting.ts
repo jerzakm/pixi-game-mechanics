@@ -155,8 +155,8 @@ export const initShootingJuice = (parentContainer: Container) => {
   ticker.maxFPS = TARGET_FPS
   parentContainer.addChild(container)
   container.addChild(g)
-  darkness = Sprite.from('asd.png')
-  container.addChild(darkness)
+  // darkness = Sprite.from('asd.png')
+  // container.addChild(darkness)
   container.addChild(label)
   container.addChild(bloodEmittersContainer)
   label.position.x = 300
@@ -191,9 +191,11 @@ const processShaders = (delta: number) => {
     s.time += 0.1 * delta
   }
 
+  const filtered = shockwaves.filter(r => r.time < 10)
+
   if (darkness) {
     darkness.filters = [
-      ...shockwaves,
+      ...filtered,
       juiceAlpha
     ]
   }

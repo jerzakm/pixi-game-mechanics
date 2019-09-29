@@ -15,6 +15,9 @@ import { initFootstepsAudio } from "./04_audio/footeps";
 import { initFpsJuice } from "./05_juice/fpsJuice";
 import { initScreenShake } from "./05_juice/screenShake";
 import { initShootingJuice } from "./05_juice/shooting";
+import { initRoomsGen } from "./03_procedural_dungeon/rooms_gen";
+import { initGrenadeJuice } from "./05_juice/grenadeJuice";
+import { initAStarViz } from "./06_pathfinding/aStar";
 
 window.decomp = require('poly-decomp')
 
@@ -37,7 +40,9 @@ document.body.appendChild(stats.dom)
 // const audioFootsteps = initFootstepsAudio(renderer.stage)
 // const fpsJuice = initFpsJuice(renderer.stage)
 // const screenShake = initScreenShake(renderer.stage)
-const shootingJuice = initShootingJuice(renderer.stage)
+// const shootingJuice = initShootingJuice(renderer.stage)
+// const roomsGen = initRoomsGen(renderer.stage)
+const aStar = initAStarViz(renderer.stage)
 
 
 renderer.ticker.add((delta: number) => {
@@ -49,12 +54,14 @@ renderer.ticker.add((delta: number) => {
     // platformerMovement(delta)
     // shatterDemo(delta)
     // cellularAutomata(delta)
+    // roomsGen(delta)
     // audioPositionDemo(delta)
     // directionalSpritesheet(delta)
     // audioFootsteps(delta)
     // fpsJuice(delta)
     // screenShake(delta)
-    shootingJuice(delta)
+    // shootingJuice(delta)
+    aStar(delta)
 
     stats.end()
 })
