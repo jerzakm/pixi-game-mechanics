@@ -11,8 +11,12 @@
 		<a href="/">Home</a>
 		<nav aria-label="Pathfinding">
 			<h2>Pathfinding</h2>
-			<a href="pathfinding/astar">A* search visualized</a>
-			<a href="pathfinding/astarcrowds">A* with crowds and traffic</a>
+			<a href="/pathfinding/astar">A* search visualized</a>
+			<a href="/pathfinding/astarcrowds">A* with crowds and traffic</a>
+		</nav>
+		<nav aria-label="Other">
+			<h2>Other</h2>
+			<a href="/other/pixiPreviewComponent">Pixi.js preview component</a>
 		</nav>
 	</menu>
 

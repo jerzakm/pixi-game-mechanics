@@ -49,5 +49,8 @@
 	"bugs": {
 		"url": "https://github.com/jerzakm/pixi-game-mechanics/issues"
 	},
-	"homepage": "https://github.com/jerzakm/pixi-game-mechanics#readme"
+	"homepage": "https://github.com/jerzakm/pixi-game-mechanics#readme",
+	"dependencies": {
+		"pixi.js": "^6.1.2"
+	}
 }
