@@ -1,5 +1,10 @@
 @import './styles/tailwind.css';
+@import './styles/fonts.scss';
+@import './styles/colors.scss';
+@import './styles/typography.scss';
 
-body{
-    background-color: #161616;
-} 
+body {
+	background-color: $dark;
+	color: $light;
+	font-family: 'Montserrat';
+}
