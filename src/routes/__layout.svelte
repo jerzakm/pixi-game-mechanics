@@ -26,7 +26,7 @@
 		@apply mb-8;
 	}
 	main {
-		@apply flex m-4;
+		@apply flex m-4 flex-wrap;
 	}
 
 	nav {
@@ -37,6 +37,12 @@
 	}
 
 	menu {
-		min-width: 300px;
+		flex-basis: 20rem;
+		@apply flex-grow;
+	}
+
+	content {
+		flex-grow: 999;
+		flex-basis: 0;
 	}
 </style>
