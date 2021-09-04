@@ -48,5 +48,6 @@
 	content {
 		flex-grow: 999;
 		flex-basis: 0;
+		@apply px-8;
 	}
 </style>

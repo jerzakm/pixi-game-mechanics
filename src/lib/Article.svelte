@@ -10,7 +10,7 @@
 <style>
 	.category {
 		color: white;
-		@apply mt-4;
+		@apply mt-8;
 		@apply font-medium;
 	}
 	.title {
