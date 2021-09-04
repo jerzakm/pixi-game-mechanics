@@ -8,3 +8,7 @@ body {
 	color: $light;
 	font-family: 'Montserrat';
 }
+
+button {
+	@apply p-1 rounded-lg text-xs font-bold hover:bg-primary border border-solid border-light;
+}

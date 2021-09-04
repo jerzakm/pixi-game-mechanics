@@ -6,7 +6,40 @@
 	export let applicationOptions: PIXI.IRendererOptions;
 	export let renderer: PIXI.Renderer;
 
+	enum PixiViewMode {
+		NORMAL = 'NORMAL',
+		FULL = 'FULL',
+		FULL_BG = 'FULL_BG'
+	}
+
+	let viewMode: PixiViewMode = PixiViewMode.NORMAL;
+
+	const setView = (view: PixiViewMode) => {
+		localStorage.setItem('experiments_pixiViewMode', view);
+		viewMode = view;
+		renderer && handleResize();
+	};
+
+	const getView = () => {
+		return localStorage.getItem('experiments_pixiViewMode');
+	};
+
 	onMount(() => {
+		switch (viewMode) {
+			case PixiViewMode.FULL:
+				goFullscreen();
+				break;
+			case PixiViewMode.FULL_BG:
+				goFullscreenBackground();
+				break;
+			case PixiViewMode.NORMAL:
+				goDefaultView();
+				break;
+			default:
+				console.log('unsupported viewmode?', viewMode);
+				break;
+		}
+
 		const options = Object.assign(
 			{
 				backgroundColor: null,
@@ -18,38 +51,57 @@
 
 		renderer = new PIXI.Renderer(options);
 
-		resizeCanvas();
 		canvas.addEventListener('resize', () => {
-			resizeCanvas();
+			handleResize();
 		});
+		window.addEventListener('resize', () => {
+			handleResize();
+		});
+
+		viewMode = getView() ? PixiViewMode[getView()] : PixiViewMode.NORMAL;
+		handleResize();
 	});
 
-	const resizeCanvas = () => {
+	const handleResize = () => {
 		const box = canvas.getBoundingClientRect();
 		renderer.resize(box.width, box.height);
 	};
 
-	const goFullscreen = (background = false) => {
-		canvas.style.position = 'fixed';
+	const goFullscreen = () => {
+		canvas.style.position = 'absolute';
 		canvas.style.top = '0px';
-		canvas.style.left = '0px;';
+		canvas.style.left = '0px';
 		canvas.style.width = `${window.innerWidth}px`;
 		canvas.style.height = `${window.innerHeight}px`;
 		canvas.width = window.innerWidth;
 		canvas.height = window.innerHeight;
-		canvas.style.zIndex = `${background ? -100 : 100}`;
+		canvas.style.zIndex = `100`;
+		setView(PixiViewMode.FULL);
+	};
+
+	const goFullscreenBackground = () => {
+		canvas.style.position = 'absolute';
+		canvas.style.top = '0px';
+		canvas.style.left = '0px';
+		canvas.style.width = `${window.innerWidth}px`;
+		canvas.style.height = `${window.innerHeight}px`;
+		canvas.width = window.innerWidth;
+		canvas.height = window.innerHeight;
+		canvas.style.zIndex = `-100`;
+		setView(PixiViewMode.FULL_BG);
 	};
 
 	const goDefaultView = () => {
 		canvas.style.position = 'unset';
 		canvas.style.top = 'unset';
 		canvas.style.left = 'unset';
-		canvas.style.width = `100%`;
-		canvas.style.height = `100%`;
-		canvas.style.zIndex = `1`;
 		const box = canvas.getBoundingClientRect();
+		canvas.style.width = `100%`;
+		canvas.style.height = `unset`;
+		canvas.style.zIndex = `1`;
 		canvas.width = box.width;
 		canvas.height = box.height;
+		setView(PixiViewMode.NORMAL);
 	};
 </script>
 
@@ -59,30 +111,41 @@
 	</canvasBox>
 	<resizeButtons>
 		<b>Resize: </b>
-		<button on:click={() => goDefaultView()}>Small (default)</button>
-		<button on:click={() => goFullscreen()}>Fullscreen</button>
-		<button on:click={() => goFullscreen(true)}>Fullscreen Background</button>
+		<button
+			class={`${viewMode == PixiViewMode.NORMAL ? 'bg-primary' : ''}`}
+			on:click={() => goDefaultView()}>Small (default)</button
+		>
+		<button
+			class={`${viewMode == PixiViewMode.FULL ? 'bg-primary' : ''}`}
+			on:click={() => goFullscreen()}>Fullscreen</button
+		>
+		<button
+			class={`${viewMode == PixiViewMode.FULL_BG ? 'bg-primary' : ''}`}
+			on:click={() => goFullscreenBackground()}>Fullscreen Background</button
+		>
 	</resizeButtons>
 </pixiWrapper>
 
 <style lang="postcss">
 	canvasBox {
-		max-width: 800px;
-		height: 500px;
-		display: block;
+		width: 100%;
+		max-height: 50vh;
+		@apply flex items-stretch;
 	}
 	canvas {
-		width: 100%;
-		height: 100%;
+		@apply max-h-full max-w-full;
 	}
 	pixiWrapper {
+		align-items: end;
+		justify-items: stretch;
 		@apply flex flex-col;
 	}
 	button {
-		@apply ml-4 p-2 rounded-lg text-xs font-bold;
+		@apply ml-2;
 	}
 	resizeButtons {
 		z-index: 99999;
-		@apply absolute flex items-center mt-4 ml-4;
+
+		@apply fixed flex mt-4 mr-8;
 	}
 </style>
