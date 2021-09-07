@@ -51,6 +51,7 @@
 	},
 	"homepage": "https://github.com/jerzakm/pixi-game-mechanics#readme",
 	"dependencies": {
+		"gpu.js": "^2.11.4",
 		"pixi.js": "^6.1.2"
 	}
 }

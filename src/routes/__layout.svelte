@@ -9,13 +9,10 @@
 	<menu>
 		<h1 class="title"><a href="/">Math, graphics & game stuff </a></h1>
 		<a href="/">Home</a>
-		<nav aria-label="Pathfinding">
-			<h2>Pathfinding</h2>
-			<a href="/pathfinding/astar">A* search visualized</a>
-			<a href="/pathfinding/astarcrowds">A* with crowds and traffic</a>
-		</nav>
+
 		<nav aria-label="Other">
 			<h2>Other</h2>
+			<a href="/other/gpuMath">Accelerating web performance with GPU math</a>
 			<a href="/other/pixiPreviewComponent">Pixi.js preview component</a>
 		</nav>
 	</menu>
@@ -27,7 +24,7 @@
 
 <style lang="postcss">
 	.title {
-		@apply mb-8;
+		@apply mb-16;
 	}
 	main {
 		@apply flex m-4 flex-wrap;
@@ -37,7 +34,7 @@
 		@apply flex flex-col;
 	}
 	nav a {
-		@apply ml-4;
+		@apply ml-4 mb-2;
 	}
 
 	menu {
