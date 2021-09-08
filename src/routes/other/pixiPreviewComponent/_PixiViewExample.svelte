@@ -1,6 +1,5 @@
 <script lang="ts">
 	import PixiView from '$lib/PixiView.svelte';
-	import Article from '$lib/Article.svelte';
 	import { squareGrid } from '$lib/pixiUtil/pixiBackgrounds';
 	import { onMount } from 'svelte';
 	import * as PIXI from 'pixi.js';
@@ -45,7 +44,3 @@
 </script>
 
 <PixiView bind:applicationOptions bind:renderer />
-
-<Article category={'Other'} title={'Pixi.js preview component'}>
-	<p>Simple Svelte component consisting of Pixi.JS powered canvas.</p></Article
->
