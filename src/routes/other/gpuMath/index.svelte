@@ -2,39 +2,65 @@
 	import Article from '$lib/Article.svelte';
 	import { onMount } from 'svelte';
 	import { GPU } from 'gpu.js';
+	import { movingAverage } from '$lib/statistics/investingIndicators';
+	import * as Papa from 'papaparse';
 
-	const generateMatrices = () => {
-		const matrices = [[], []];
-		for (let y = 0; y < 512; y++) {
-			matrices[0].push([]);
-			matrices[1].push([]);
-			for (let x = 0; x < 512; x++) {
-				matrices[0][y].push(Math.random());
-				matrices[1][y].push(Math.random());
-			}
-		}
-		return matrices;
+	const getData = async () => {
+		const prices: number[] = [];
+
+		const ethUsdRes = await fetch('/data/ETH_1D.csv');
+		const ethUsd = await ethUsdRes.text();
+
+		const { data } = Papa.parse(ethUsd, { header: true });
+		for (const entry of data) prices.push(parseFloat(entry.Open));
+
+		return { prices };
 	};
 
 	onMount(async () => {
-		const ethUsdRes = await fetch('/data/ETH_USD_DAILY.csv');
-		const ethUsd = await ethUsdRes.text();
+		const { prices } = await getData();
+		const timePeriods = 2;
 
-		console.log(ethUsd);
+		console.time('cpuSma');
+		movingAverage(prices, timePeriods);
+		console.timeEnd('cpuSma');
+		console.time('cpuSma');
+		movingAverage(prices, timePeriods);
+		console.timeEnd('cpuSma');
+		console.time('cpuSma');
+		movingAverage(prices, timePeriods);
+		console.timeEnd('cpuSma');
 
 		const gpu = new GPU();
-		const multiplyMatrix = gpu
-			.createKernel(function (a, b) {
+
+		const gpuSma = gpu
+			.createKernel(function (prices, timePeriods, priceQty) {
+				//@ts-ignore
+				if (this.thread.x > priceQty - timePeriods) return 0;
+
 				let sum = 0;
-				for (let i = 0; i < 512; i++) {
-					sum += a[this.thread.y][i] * b[i][this.thread.x];
+				for (let i = 0; i < timePeriods; i++) {
+					sum += prices[this.thread.x + i];
 				}
-				return sum;
+				//@ts-ignore
+				return sum / timePeriods;
 			})
-			.setOutput([512, 512]);
-		const matrices = generateMatrices();
-		const out = multiplyMatrix(matrices[0], matrices[1]);
-		console.log(out);
+			.setOutput([prices.length]);
+		console.time('gpuSma');
+		const gpuSmaRes = gpuSma(prices, timePeriods, prices.length);
+		console.timeEnd('gpuSma');
+		console.time('gpuSma');
+		gpuSma(prices, timePeriods, prices.length);
+		console.timeEnd('gpuSma');
+		console.time('gpuSma');
+		gpuSma(prices, timePeriods, prices.length);
+		console.timeEnd('gpuSma');
+		console.time('gpuSma');
+		gpuSma(prices, timePeriods, prices.length);
+		console.timeEnd('gpuSma');
+		console.time('gpuSma');
+		gpuSma(prices, timePeriods, prices.length);
+		console.timeEnd('gpuSma');
 	});
 </script>
 
