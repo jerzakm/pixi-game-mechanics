@@ -24,12 +24,6 @@
 		console.time('cpuSma');
 		movingAverage(prices, timePeriods);
 		console.timeEnd('cpuSma');
-		console.time('cpuSma');
-		movingAverage(prices, timePeriods);
-		console.timeEnd('cpuSma');
-		console.time('cpuSma');
-		movingAverage(prices, timePeriods);
-		console.timeEnd('cpuSma');
 
 		const gpu = new GPU();
 
@@ -48,18 +42,6 @@
 			.setOutput([prices.length]);
 		console.time('gpuSma');
 		const gpuSmaRes = gpuSma(prices, timePeriods, prices.length);
-		console.timeEnd('gpuSma');
-		console.time('gpuSma');
-		gpuSma(prices, timePeriods, prices.length);
-		console.timeEnd('gpuSma');
-		console.time('gpuSma');
-		gpuSma(prices, timePeriods, prices.length);
-		console.timeEnd('gpuSma');
-		console.time('gpuSma');
-		gpuSma(prices, timePeriods, prices.length);
-		console.timeEnd('gpuSma');
-		console.time('gpuSma');
-		gpuSma(prices, timePeriods, prices.length);
 		console.timeEnd('gpuSma');
 	});
 </script>
