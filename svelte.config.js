@@ -12,8 +12,7 @@ const config = {
 	preprocess: [
 		preprocess(),
 		mdsvex({
-			extensions: ['.md'],
-			highlight: true
+			extensions: ['.md']
 		})
 	],
 
