@@ -1,6 +1,22 @@
+---
+title: Pixi.js preview component
+category: Other
+---
+
+<script lang="ts">
+    import Example from './_PixiViewExample.svelte'
+
+</script>
+
+<Example/>
+<h2 class="text-light font-medium mt-8">{category}</h2>
+<h1>{title}</h1>
+
+Simple Svelte component consisting of Pixi.JS powered canvas.
+
+```ts
 <script lang="ts">
 	import PixiView from '$lib/PixiView.svelte';
-	import Article from '$lib/Article.svelte';
 	import { squareGrid } from '$lib/pixiUtil/pixiBackgrounds';
 	import { onMount } from 'svelte';
 	import * as PIXI from 'pixi.js';
@@ -46,6 +62,4 @@
 
 <PixiView bind:applicationOptions bind:renderer />
 
-<Article category={'Other'} title={'Pixi.js preview component'}>
-	<p>Simple Svelte component consisting of Pixi.JS powered canvas.</p></Article
->
+```
