@@ -10,9 +10,8 @@
 		<h1 class="title"><a href="/">Math, graphics & game stuff </a></h1>
 		<a href="/">Home</a>
 		<nav aria-label="Pathfinding">
-			<h2>Pathfinding</h2>
-			<a href="/pathfinding/astar">A* search visualized</a>
-			<a href="/pathfinding/astarcrowds">A* with crowds and traffic</a>
+			<h2>Game Mechanics</h2>
+			<a href="/gameMechanics/simpleBox2dPhysics">Simple shooter with Box2D physics</a>
 		</nav>
 		<nav aria-label="Other">
 			<h2>Other</h2>
