@@ -85,3 +85,24 @@ const initializeHelpers = (box2D: typeof Box2D & EmscriptenModule) => {
 		createRandomPolygonShape
 	};
 };
+
+export const createWorld = (
+	box2D: typeof Box2D & EmscriptenModule,
+	options?: IWorldOptions
+): Box2D.b2World => {
+	const { b2Vec2, b2World } = box2D;
+
+	const defaultOptions: IWorldOptions = {
+		gravity: new b2Vec2(0.0, -10.0)
+	};
+
+	options = Object.assign(defaultOptions, options);
+
+	const world = new b2World(options.gravity);
+
+	return world;
+};
+
+interface IWorldOptions {
+	gravity: number | Box2D.b2Vec2;
+}

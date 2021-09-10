@@ -1,5 +1,5 @@
 ---
-title: Pixi.js preview component
+title: Simple shooter with Box2D physics
 category: Game mechanics
 ---
 
