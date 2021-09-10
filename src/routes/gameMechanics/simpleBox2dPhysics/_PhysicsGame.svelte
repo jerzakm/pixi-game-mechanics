@@ -3,6 +3,7 @@
 	import { squareGrid } from '$lib/pixiUtil/pixiBackgrounds';
 	import { onMount } from 'svelte';
 	import * as PIXI from 'pixi.js';
+	import { initializeBox2D } from './physics/box2d';
 
 	let mainScene = new PIXI.Container();
 	let renderer: PIXI.Renderer;
@@ -16,6 +17,8 @@
 
 	function start() {
 		mainScene.addChild(grid.graphics);
+		initializeBox2D('/libraries/');
+		const pixelsPerMeter = 1;
 	}
 
 	const fps = 60;
@@ -25,6 +28,7 @@
 		lastFrame = time;
 
 		grid.draw();
+		// world.step(delta);
 
 		renderer.render(mainScene);
 		requestAnimationFrame(step);
