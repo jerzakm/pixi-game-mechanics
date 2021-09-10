@@ -51,6 +51,7 @@
 	},
 	"homepage": "https://github.com/jerzakm/pixi-game-mechanics#readme",
 	"dependencies": {
+		"box2d-wasm": "^6.0.4",
 		"mdsvex": "^0.9.8",
 		"pixi.js": "^6.1.2"
 	}
